@@ -3,16 +3,21 @@ import { IonButton, IonButtons, IonContent, IonFooter, IonHeader, IonIcon, IonSp
 import { addIcons } from 'ionicons';
 import { close, heart, chevronDown } from 'ionicons/icons';
 
-import { type DiscoverPetDetail, distanceLabel } from '../../../core/models/discover.models';
+import { distanceLabel } from '../../../core/models/discover.models';
+import type { PetProfile } from '../../../core/models/pet.models';
 import { SPECIES_ID } from '../../../core/models/reference.models';
 import { ReferenceStore } from '../../../core/reference/reference.store';
-import { petAge } from '../../../shared/pipes/pet-age.pipe';
-import { PhotoCarouselComponent } from '../../../shared/ui/photo-carousel/photo-carousel.component';
-import { DiscoverStore } from '../state/discover.store';
+import { PetProfileRepository } from '../../../core/pet-profile/pet-profile.repository';
+import { PhotosRepository } from '../../../core/photos/photos.repository';
+import { petAge } from '../../pipes/pet-age.pipe';
+import { PhotoCarouselComponent } from '../photo-carousel/photo-carousel.component';
 
 const dateFormat = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 
-/** Full profile of a discovered pet. Dismisses with role 'like' or 'pass' from its buttons. */
+/**
+ * Full profile of another owner's pet (discovery, likes received, matches).
+ * With actions, dismisses with role 'like' or 'pass' from its buttons.
+ */
 @Component({
   selector: 'app-pet-detail-modal',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -71,7 +76,7 @@ const dateFormat = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'lo
         <div class="center"><ion-spinner name="crescent" color="primary" /></div>
       }
     </ion-content>
-    @if (pet()) {
+    @if (pet() && actions()) {
       <ion-footer class="ion-no-border">
         <div class="actions">
           <button type="button" class="round pass" aria-label="Passer" (click)="dismiss('pass')"><ion-icon name="close" /></button>
@@ -121,15 +126,19 @@ export class PetDetailModalComponent implements OnInit {
   /** Passed through ModalController componentProps. */
   readonly petId = input.required<string>();
   readonly distanceKm = input<number | null>(null);
+  /** Show the pass/like buttons. */
+  readonly actions = input(true);
 
-  private readonly modal = inject(ModalController);
-  private readonly store = inject(DiscoverStore);
+  // Not named "modal": Ionic writes the <ion-modal> element into that property.
+  private readonly modals = inject(ModalController);
+  private readonly profiles = inject(PetProfileRepository);
+  private readonly photos = inject(PhotosRepository);
   private readonly reference = inject(ReferenceStore);
 
-  protected readonly pet = signal<DiscoverPetDetail | null>(null);
+  protected readonly pet = signal<PetProfile | null>(null);
   protected readonly error = signal(false);
 
-  protected readonly photoUrls = computed(() => (this.pet()?.pet_photos ?? []).map((p) => this.store.photoUrl(p.path)));
+  protected readonly photoUrls = computed(() => (this.pet()?.pet_photos ?? []).map((p) => this.photos.publicUrl(p.path)));
   protected readonly emoji = computed(() => (this.pet()?.species_id === SPECIES_ID.cat ? '🐱' : '🐶'));
   protected readonly age = computed(() => (this.pet() ? petAge(this.pet()!.birth_date) : ''));
   protected readonly breed = computed(() => (this.pet() ? this.reference.breedLabel(this.pet()!) : ''));
@@ -157,13 +166,13 @@ export class PetDetailModalComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     try {
       await this.reference.ensureLoaded();
-      this.pet.set(await this.store.getDetail(this.petId()));
+      this.pet.set(await this.profiles.getProfile(this.petId()));
     } catch {
       this.error.set(true);
     }
   }
 
   protected dismiss(role: 'like' | 'pass' | 'close'): void {
-    void this.modal.dismiss(null, role);
+    void this.modals.dismiss(null, role);
   }
 }

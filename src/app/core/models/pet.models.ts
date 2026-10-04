@@ -19,6 +19,13 @@ export type PetDetail = Pet & {
 /** A pet in the owner's list, with its main photo (if any). */
 export type PetListItem = Pet & { pet_photos: Pick<PetPhoto, 'path'>[] };
 
+/** Another owner's pet as shown in the detail sheet (discovery, likes, matches). */
+export type PetProfile = Pet & {
+  pet_vaccinations: Pick<PetVaccination, 'vaccine_id' | 'administered_on' | 'expires_on'>[];
+  pet_photos: Pick<PetPhoto, 'path'>[];
+  owner: { display_name: string } | null;
+};
+
 /** Same limit as the pet_photos_before_insert trigger. */
 export const PET_PHOTOS_MAX = 6;
 

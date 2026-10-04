@@ -5,6 +5,7 @@ import { AuthStore } from '../../../core/auth/auth.store';
 import type { DiscoverPet } from '../../../core/models/discover.models';
 import type { PetListItem } from '../../../core/models/pet.models';
 import { PhotosRepository } from '../../../core/photos/photos.repository';
+import { SwipesRepository } from '../../../core/swipes/swipes.repository';
 import { PetsStore } from '../../pets/state/pets.store';
 import { DiscoverRepository, type SearchParams } from '../data/discover.repository';
 import { DiscoverStore } from './discover.store';
@@ -26,6 +27,7 @@ describe('DiscoverStore', () => {
         { provide: AuthStore, useValue: { user: signal({ id: 'me' }) } },
         { provide: PetsStore, useValue: { pets: myPets } },
         { provide: PhotosRepository, useValue: {} },
+        { provide: SwipesRepository, useValue: { swipe: async () => null } },
         {
           provide: DiscoverRepository,
           useValue: {
@@ -60,7 +62,7 @@ describe('DiscoverStore', () => {
     const store = TestBed.inject(DiscoverStore);
     pages = [Array.from({ length: 20 }, (_, i) => found(`p${i}`)), [found('next')]];
     await store.ensureLoaded();
-    for (let i = 0; i < 17; i++) store.swipe(`p${i}`);
+    for (let i = 0; i < 17; i++) void store.swipe(`p${i}`, 'pass');
     await new Promise((resolve) => setTimeout(resolve));
     expect(calls.length).toBe(2);
     expect(calls[1].excludeIds).toHaveLength(20);

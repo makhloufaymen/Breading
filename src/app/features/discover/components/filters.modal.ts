@@ -107,7 +107,8 @@ export class FiltersModalComponent implements OnInit {
   readonly filters = input.required<DiscoverFilters>();
   readonly speciesId = input.required<number>();
 
-  private readonly modal = inject(ModalController);
+  // Not named "modal": Ionic writes the <ion-modal> element into that property.
+  private readonly modals = inject(ModalController);
   private readonly reference = inject(ReferenceStore);
 
   protected readonly ageMax = AGE_FILTER_MAX;
@@ -158,7 +159,7 @@ export class FiltersModalComponent implements OnInit {
   }
 
   protected async pickBreed(): Promise<void> {
-    const picker = await this.modal.create({
+    const picker = await this.modals.create({
       component: BreedPickerModalComponent,
       componentProps: { speciesId: this.speciesId(), selectedId: this.breedId(), filterMode: true },
     });
@@ -174,7 +175,7 @@ export class FiltersModalComponent implements OnInit {
   }
 
   protected close(): void {
-    void this.modal.dismiss(null, 'cancel');
+    void this.modals.dismiss(null, 'cancel');
   }
 
   protected apply(): void {
@@ -184,7 +185,7 @@ export class FiltersModalComponent implements OnInit {
       maxAgeYears: this.maxAge() === AGE_FILTER_MAX ? null : this.maxAge(),
       maxDistanceKm: this.distance() === DISTANCE_FILTER_MAX ? null : this.distance(),
     };
-    void this.modal.dismiss(filters, 'apply');
+    void this.modals.dismiss(filters, 'apply');
   }
 
   private load(filters: DiscoverFilters): void {

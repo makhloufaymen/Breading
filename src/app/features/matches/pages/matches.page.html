@@ -1,0 +1,121 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Matchs</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-segment [value]="tab()" (ionChange)="onTabChange($event.detail.value)">
+      <ion-segment-button value="matches">
+        <ion-label>Matchs{{ store.matches().length ? ' (' + store.matches().length + ')' : '' }}</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="likes">
+        <ion-label>Ils vous aiment{{ store.likesCount() ? ' (' + store.likesCount() + ')' : '' }}</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
+    <ion-refresher-content />
+  </ion-refresher>
+
+  @if (!store.loaded()) {
+    @if (store.error()) {
+      <app-empty-state emoji="🙀" title="Chargement impossible" message="Vérifiez votre connexion puis réessayez.">
+        <ion-button (click)="ionViewWillEnter()">Réessayer</ion-button>
+      </app-empty-state>
+    } @else {
+      <div class="center"><ion-spinner name="crescent" color="primary" /></div>
+    }
+  } @else if (tab() === 'matches') {
+    <!-- ─── Matches ─── -->
+    @if (store.matches().length) {
+      <ion-list lines="none" class="list">
+        @for (match of store.matches(); track match.id) {
+          <ion-item-sliding #sliding>
+            <ion-item button [detail]="false" class="row" (click)="openMatch(match)">
+              <div slot="start" class="avatar" aria-hidden="true">
+                @if (photo(match.other.photoPath); as url) {
+                  <img [src]="url" alt="" />
+                } @else {
+                  {{ emoji(match.other.speciesId) }}
+                }
+              </div>
+              <ion-label>
+                <h2>{{ match.other.name }} <span class="heart">💛</span> {{ match.mine.name }}</h2>
+                <p>{{ match.other.ownerName }} · {{ match.other.city }}</p>
+              </ion-label>
+              <ion-note slot="end">{{ matchDate(match) }}</ion-note>
+            </ion-item>
+            <ion-item-options side="end">
+              <ion-item-option color="danger" (click)="confirmUnmatch(match, sliding)">
+                <ion-icon slot="top" name="heart-dislike-outline" />
+                Annuler
+              </ion-item-option>
+            </ion-item-options>
+          </ion-item-sliding>
+        }
+      </ion-list>
+      <p class="hint">Glissez un match vers la gauche pour l'annuler.</p>
+    } @else {
+      <app-empty-state
+        emoji="💞"
+        title="Pas encore de match"
+        message="Quand un like sera réciproque, vous pourrez discuter ici avec l'autre propriétaire."
+      >
+        <ion-button routerLink="/tabs/discover">Découvrir des profils</ion-button>
+      </app-empty-state>
+    }
+  } @else {
+    <!-- ─── Likes received ─── -->
+    @if (store.likes().length) {
+      <div class="likes">
+        @for (like of store.likes(); track like.id + like.my_pet_id) {
+          <div class="like-card">
+            <button type="button" class="like-main" (click)="openLike(like)">
+              <div class="avatar big" aria-hidden="true">
+                @if (photo(like.photo_paths[0]); as url) {
+                  <img [src]="url" alt="" />
+                } @else {
+                  {{ emoji(like.species_id) }}
+                }
+              </div>
+              <div class="like-info">
+                <h2>{{ like.name }}, {{ like.birth_date | petAge }} {{ like.sex === 'male' ? '♂' : '♀' }}</h2>
+                <p>{{ breed(like) }}</p>
+                <p>📍 {{ like.city }} · {{ distance(like.distance_km) }}</p>
+                <p class="target">a liké <strong>{{ like.my_pet_name }}</strong></p>
+              </div>
+            </button>
+            <div class="like-actions">
+              <button
+                type="button"
+                class="round pass"
+                aria-label="Passer"
+                [disabled]="answering() === like.id + like.my_pet_id"
+                (click)="answer(like, 'pass')"
+              >
+                <ion-icon name="close" />
+              </button>
+              <button
+                type="button"
+                class="round like"
+                aria-label="Liker en retour"
+                [disabled]="answering() === like.id + like.my_pet_id"
+                (click)="answer(like, 'like')"
+              >
+                <ion-icon name="heart" />
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <app-empty-state
+        emoji="💌"
+        title="Personne pour l'instant"
+        message="Les animaux qui likent les vôtres apparaîtront ici. Likez-les en retour pour créer un match."
+      />
+    }
+  }
+</ion-content>

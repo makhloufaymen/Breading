@@ -14,6 +14,8 @@ import {
   IonTitle,
   IonToolbar,
   ModalController,
+  NavController,
+  ToastController,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { chevronDown, close, heart, informationCircle, options } from 'ionicons/icons';
@@ -24,10 +26,11 @@ import { ReferenceStore } from '../../../core/reference/reference.store';
 import { PetsStore } from '../../pets/state/pets.store';
 import { petAge } from '../../../shared/pipes/pet-age.pipe';
 import { EmptyStateComponent } from '../../../shared/ui/empty-state/empty-state.component';
+import { PetDetailModalComponent } from '../../../shared/ui/pet-detail/pet-detail.modal';
+import { MatchModalComponent, type MatchPetView } from '../../../shared/ui/match-modal/match-modal.component';
 import type { PetCardData } from '../../../shared/ui/pet-card/pet-card.component';
 import { type SwipeDirection, SwipeDeckComponent } from '../../../shared/ui/swipe-deck/swipe-deck.component';
 import { FiltersModalComponent } from '../components/filters.modal';
-import { PetDetailModalComponent } from '../components/pet-detail.modal';
 import { DiscoverStore } from '../state/discover.store';
 
 @Component({
@@ -56,6 +59,8 @@ export class DiscoverPage {
   private readonly reference = inject(ReferenceStore);
   private readonly modals = inject(ModalController);
   private readonly actionSheets = inject(ActionSheetController);
+  private readonly toasts = inject(ToastController);
+  private readonly nav = inject(NavController);
 
   private readonly deck = viewChild(SwipeDeckComponent);
   private readonly likeButton = viewChild<ElementRef<HTMLElement>>('likeButton');
@@ -131,13 +136,36 @@ export class DiscoverPage {
     if (top) void this.openDetail(top.id);
   }
 
-  protected onSwiped({ id, direction }: { id: string; direction: SwipeDirection }): void {
+  protected async onSwiped({ id, direction }: { id: string; direction: SwipeDirection }): Promise<void> {
     if (direction === 'like') this.celebrateLike();
-    this.store.swipe(id);
+    // Captured before the card leaves the deck, for the match screen.
+    const card = this.cards().find((c) => c.id === id);
+    const seeker = this.store.seeker();
+    try {
+      const matchId = await this.store.swipe(id, direction);
+      if (matchId && card && seeker) {
+        await this.showMatch(
+          { name: seeker.name, photoUrl: this.seekerAvatar(), emoji: this.emoji(seeker.species_id) },
+          { name: card.name, photoUrl: card.photoUrls[0] ?? null, emoji: card.emoji },
+        );
+      }
+    } catch {
+      // The card is gone locally but not saved: it will come back in a later search.
+      const toast = await this.toasts.create({ message: 'Action non enregistrée, vérifiez votre connexion.', color: 'danger', duration: 2500, position: 'top' });
+      await toast.present();
+    }
   }
 
   protected resetFilters(): Promise<void> {
     return this.store.setFilters(DEFAULT_FILTERS);
+  }
+
+  private async showMatch(mine: MatchPetView, other: MatchPetView): Promise<void> {
+    void Haptics.impact({ style: ImpactStyle.Heavy }).catch(() => undefined);
+    const modal = await this.modals.create({ component: MatchModalComponent, componentProps: { mine, other } });
+    await modal.present();
+    const { role } = await modal.onWillDismiss();
+    if (role === 'matches') await this.nav.navigateRoot('/tabs/matches');
   }
 
   /** Small heart pop + haptic tick (vibration on phones, nothing in the browser). */

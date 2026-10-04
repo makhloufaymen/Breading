@@ -57,7 +57,8 @@ export class EditNameModalComponent implements OnInit {
   /** Passed through ModalController componentProps. */
   readonly currentName = input('');
 
-  private readonly modal = inject(ModalController);
+  // Not named "modal": Ionic writes the <ion-modal> element into that property.
+  private readonly modals = inject(ModalController);
   private readonly profiles = inject(ProfileStore);
 
   protected readonly min = DISPLAY_NAME_MIN;
@@ -73,7 +74,7 @@ export class EditNameModalComponent implements OnInit {
   }
 
   protected cancel(): void {
-    void this.modal.dismiss(null, 'cancel');
+    void this.modals.dismiss(null, 'cancel');
   }
 
   protected async save(): Promise<void> {
@@ -87,7 +88,7 @@ export class EditNameModalComponent implements OnInit {
     this.error.set(false);
     try {
       await this.profiles.updateDisplayName(displayName);
-      await this.modal.dismiss(displayName, 'saved');
+      await this.modals.dismiss(displayName, 'saved');
     } catch {
       this.error.set(true);
     } finally {

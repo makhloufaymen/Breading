@@ -1,5 +1,4 @@
 import type { Database } from '../supabase/database.types';
-import type { Pet, PetVaccination } from './pet.models';
 
 type SearchRow = Database['public']['Functions']['search_pets']['Returns'][number];
 
@@ -7,13 +6,6 @@ type SearchRow = Database['public']['Functions']['search_pets']['Returns'][numbe
 export type DiscoverPet = Omit<SearchRow, 'breed_id' | 'breed_other'> & {
   breed_id: number | null;
   breed_other: string | null;
-};
-
-/** Full profile shown in the detail sheet. */
-export type DiscoverPetDetail = Pet & {
-  pet_vaccinations: Pick<PetVaccination, 'vaccine_id' | 'administered_on' | 'expires_on'>[];
-  pet_photos: { path: string }[];
-  owner: { display_name: string } | null;
 };
 
 export interface DiscoverFilters {

@@ -96,7 +96,8 @@ export class BreedPickerModalComponent {
   readonly otherSelected = input(false);
   readonly filterMode = input(false);
 
-  private readonly modal = inject(ModalController);
+  // Not named "modal": Ionic writes the <ion-modal> element into that property.
+  private readonly modals = inject(ModalController);
   private readonly reference = inject(ReferenceStore);
 
   protected readonly query = signal('');
@@ -111,18 +112,18 @@ export class BreedPickerModalComponent {
   }
 
   protected pick(breedId: number): void {
-    void this.modal.dismiss({ kind: 'listed', breedId } satisfies BreedPick, 'picked');
+    void this.modals.dismiss({ kind: 'listed', breedId } satisfies BreedPick, 'picked');
   }
 
   protected pickOther(): void {
-    void this.modal.dismiss({ kind: 'other' } satisfies BreedPick, 'picked');
+    void this.modals.dismiss({ kind: 'other' } satisfies BreedPick, 'picked');
   }
 
   protected pickAny(): void {
-    void this.modal.dismiss({ kind: 'any' } satisfies BreedPick, 'picked');
+    void this.modals.dismiss({ kind: 'any' } satisfies BreedPick, 'picked');
   }
 
   protected close(): void {
-    void this.modal.dismiss(null, 'cancel');
+    void this.modals.dismiss(null, 'cancel');
   }
 }

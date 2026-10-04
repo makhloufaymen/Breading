@@ -58,3 +58,11 @@ select s.id, ('5eed0000-0000-0000-0000-00000000000' || s.owner)::uuid, s.species
 from pets_seed s
 left join public.breeds b on b.species_id = s.species and b.name = s.breed
 on conflict (id) do nothing;
+
+-- ─── Likes between test accounts ─────────────────────────────
+-- Camille sees them in "Ils vous aiment" (Oscar, Mochi) and can like back to match.
+insert into public.swipes (swiper_pet_id, target_pet_id, kind) values
+  ('5eed0001-0000-0000-0000-000000000003', '5eed0001-0000-0000-0000-000000000002', 'like'),  -- Lola → Oscar
+  ('5eed0001-0000-0000-0000-000000000005', '5eed0001-0000-0000-0000-000000000002', 'like'),  -- Bella → Oscar
+  ('5eed0001-0000-0000-0000-000000000012', '5eed0001-0000-0000-0000-000000000011', 'like')   -- Simba → Mochi
+on conflict (swiper_pet_id, target_pet_id) do nothing;

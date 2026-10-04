@@ -5,9 +5,9 @@ import {
   DEFAULT_FILTERS,
   type DiscoverFilters,
   type DiscoverPet,
-  type DiscoverPetDetail,
 } from '../../../core/models/discover.models';
 import { PhotosRepository } from '../../../core/photos/photos.repository';
+import { type SwipeKind, SwipesRepository } from '../../../core/swipes/swipes.repository';
 import { PetsStore } from '../../pets/state/pets.store';
 import { DiscoverRepository } from '../data/discover.repository';
 
@@ -25,6 +25,7 @@ export class DiscoverStore {
   private readonly pets = inject(PetsStore);
   private readonly repository = inject(DiscoverRepository);
   private readonly photos = inject(PhotosRepository);
+  private readonly swipes = inject(SwipesRepository);
 
   private readonly _seekerId = signal<string | null>(null);
   private readonly _filters = signal<ReadonlyMap<string, DiscoverFilters>>(new Map());
@@ -32,7 +33,7 @@ export class DiscoverStore {
   private readonly _status = signal<'idle' | 'loading' | 'ready' | 'error'>('idle');
   private readonly _exhausted = signal(false);
 
-  /** Pets swiped this session: never shown again until the app restarts (step 6 persists swipes). */
+  /** Pets swiped this session, excluded from refills even before their swipe is saved. */
   private readonly seen = new Set<string>();
   /** Seeker + filters the deck was loaded for. */
   private loadedFor: string | null = null;
@@ -93,23 +94,25 @@ export class DiscoverStore {
     return this.ensureLoaded();
   }
 
-  /** Removes the top card. Step 6 will also record the like/pass in the database. */
-  swipe(petId: string): void {
+  /**
+   * Removes the card right away (no waiting on the network), then records the
+   * decision. Returns the match id when this like completed a match.
+   */
+  async swipe(petId: string, kind: SwipeKind): Promise<string | null> {
+    const seeker = this.seeker();
+    if (!seeker) return null;
     this.seen.add(petId);
     this._deck.update((deck) => deck.filter((p) => p.id !== petId));
     if (this._deck().length <= REFILL_THRESHOLD && !this._exhausted() && this._status() !== 'loading') {
       void this.fetchMore();
     }
+    return this.swipes.swipe(seeker.id, petId, kind);
   }
 
   /** Forces a new search (retry button, pull of new profiles). */
   reload(): Promise<void> {
     this.loadedFor = null;
     return this.ensureLoaded();
-  }
-
-  getDetail(petId: string): Promise<DiscoverPetDetail> {
-    return this.repository.getDetail(petId);
   }
 
   private async fetchMore(): Promise<void> {
