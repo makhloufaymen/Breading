@@ -95,7 +95,9 @@ npm run build && npx ng lint && npx ng test --watch=false
 ionic cap run android -l --external         # live reload sur téléphone Android
 npx cap sync                                # après un build ou l'ajout d'un plugin
 supabase start | stop                       # Supabase local (Docker)
-supabase db reset                           # rejoue migrations + seed (comptes de test camille@ / julien@ / sophie@test.fr, mot de passe password123)
+supabase db reset                           # rejoue migrations + seed (15 comptes de test : camille@, julien@, sophie@, lucas@… @test.fr, mot de passe password123)
+node supabase/scripts/seed-photos.mjs       # après un reset : photos des animaux de test (dog.ceo, thecatapi)
+docker exec -i supabase_db_Breading psql -U postgres -v email=<email> < supabase/scripts/demo-for-user.sql   # matchs et likes reçus pour un vrai compte
 ```
 
 Prérequis Windows : Node 22+, Ionic CLI, Android Studio (SDK + JDK 21 intégré), Docker Desktop (démarré), Supabase CLI. Machine à 8 Go de RAM : services Supabase non indispensables désactivés dans `supabase/config.toml` (analytics, SMTP local, edge runtime, S3, vector) ; un seul émulateur à la fois.
