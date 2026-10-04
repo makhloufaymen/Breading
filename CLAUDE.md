@@ -110,7 +110,7 @@ Statut : `[ ]` à faire, `[x]` validé dans le navigateur et commité.
 - [x] 1. Auth : inscription, connexion, déconnexion, persistance de session, guards, `profiles` (confirmation d'email désactivée en local)
 - [x] 2. Référentiels (espèces, races, vaccins) + écran Compte
 - [x] 3. Mes animaux : CRUD, race en liste ou saisie libre, pedigree, vaccins, code postal → commune
-- [ ] 4. Photos : caméra/galerie, compression, upload, ordre, suppression
+- [x] 4. Photos : caméra/galerie, compression, upload, ordre, suppression
 - [ ] 5. Découverte : `search_pets`, choix de l'animal qui cherche, filtres, pile de cartes à swiper, fiche détaillée
 - [ ] 6. Likes et matchs : swipes, trigger de match, modale « C'est un match ! », onglet Matchs, « qui m'a liké », annulation de match
 - [ ] 7. Messagerie temps réel : conversations, chat, non-lus
