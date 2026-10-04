@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import {
   IonButton,
   IonButtons,
@@ -14,21 +14,28 @@ import {
   ModalController,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { checkmark, create } from 'ionicons/icons';
+import { apps, checkmark, create } from 'ionicons/icons';
 
 import { ReferenceStore } from '../../../core/reference/reference.store';
 
-/** Result of the picker: a listed breed, or the free-text "autre race" option. */
-export type BreedPick = { readonly kind: 'listed'; readonly breedId: number } | { readonly kind: 'other' };
+/** Result of the picker: a listed breed, the free-text "autre race" option, or (filter mode) any breed. */
+export type BreedPick =
+  | { readonly kind: 'listed'; readonly breedId: number }
+  | { readonly kind: 'other' }
+  | { readonly kind: 'any' };
 
 /** Lower-case and without accents, so "epagneul" finds "Épagneul". */
 function normalize(text: string): string {
   return text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
 }
 
-/** Full-screen searchable list of breeds (195 dog breeds is too many for an ion-select). */
+/**
+ * Full-screen searchable list of breeds (195 dog breeds is too many for an ion-select).
+ * Pet form: offers "Autre race". Discovery filters (filterMode): offers "Toutes les races".
+ */
 @Component({
   selector: 'app-breed-picker-modal',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ion-header>
       <ion-toolbar>
@@ -43,16 +50,26 @@ function normalize(text: string): string {
     </ion-header>
     <ion-content>
       <ion-list>
-        <ion-item button [detail]="false" (click)="pickOther()">
-          <ion-icon slot="start" name="create" color="primary" />
-          <ion-label>
-            <strong>Autre race</strong>
-            <p>Elle n'est pas dans la liste : je la saisis</p>
-          </ion-label>
-          @if (otherSelected()) {
-            <ion-icon slot="end" name="checkmark" color="primary" />
-          }
-        </ion-item>
+        @if (filterMode()) {
+          <ion-item button [detail]="false" (click)="pickAny()">
+            <ion-icon slot="start" name="apps" color="primary" />
+            <ion-label><strong>Toutes les races</strong></ion-label>
+            @if (selectedId() === null) {
+              <ion-icon slot="end" name="checkmark" color="primary" />
+            }
+          </ion-item>
+        } @else {
+          <ion-item button [detail]="false" (click)="pickOther()">
+            <ion-icon slot="start" name="create" color="primary" />
+            <ion-label>
+              <strong>Autre race</strong>
+              <p>Elle n'est pas dans la liste : je la saisis</p>
+            </ion-label>
+            @if (otherSelected()) {
+              <ion-icon slot="end" name="checkmark" color="primary" />
+            }
+          </ion-item>
+        }
         @for (breed of filtered(); track breed.id) {
           <ion-item button [detail]="false" (click)="pick(breed.id)">
             <ion-label>{{ breed.name }}</ion-label>
@@ -61,7 +78,7 @@ function normalize(text: string): string {
             }
           </ion-item>
         } @empty {
-          <p class="none">Aucune race ne correspond. Choisissez « Autre race ».</p>
+          <p class="none">Aucune race ne correspond.</p>
         }
       </ion-list>
     </ion-content>
@@ -77,6 +94,7 @@ export class BreedPickerModalComponent {
   readonly speciesId = input.required<number>();
   readonly selectedId = input<number | null>(null);
   readonly otherSelected = input(false);
+  readonly filterMode = input(false);
 
   private readonly modal = inject(ModalController);
   private readonly reference = inject(ReferenceStore);
@@ -89,7 +107,7 @@ export class BreedPickerModalComponent {
   });
 
   constructor() {
-    addIcons({ checkmark, create });
+    addIcons({ apps, checkmark, create });
   }
 
   protected pick(breedId: number): void {
@@ -98,6 +116,10 @@ export class BreedPickerModalComponent {
 
   protected pickOther(): void {
     void this.modal.dismiss({ kind: 'other' } satisfies BreedPick, 'picked');
+  }
+
+  protected pickAny(): void {
+    void this.modal.dismiss({ kind: 'any' } satisfies BreedPick, 'picked');
   }
 
   protected close(): void {

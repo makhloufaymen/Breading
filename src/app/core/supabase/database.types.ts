@@ -174,6 +174,11 @@ isOneToOne: false
 "reorder_pet_photos":
 { Args: { "p_pet_id": string,"p_photo_ids": (string)[] }; Returns: undefined
                            },
+"search_pets":
+{ Args: { "p_breed_ids"?: (number)[],"p_exclude_ids"?: (string)[],"p_limit"?: number,"p_max_age_years"?: number,"p_max_distance_km"?: number,"p_min_age_years"?: number,"p_seeker_pet_id": string }; Returns: {
+              "birth_date": string,"breed_id": number,"breed_other": string,"city": string,"distance_km": number,"has_pedigree": boolean,"id": string,"name": string,"photo_paths": (string)[],"sex": Database["public"]['Enums']["pet_sex"],"species_id": number
+            }[]
+                           },
 "set_pet_vaccinations":
 { Args: { "p_items": Json,"p_pet_id": string }; Returns: undefined
                            }

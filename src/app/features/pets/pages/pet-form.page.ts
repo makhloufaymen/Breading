@@ -53,7 +53,7 @@ import {
 } from '../../../core/models/pet.models';
 import { SPECIES_ID } from '../../../core/models/reference.models';
 import { ReferenceStore } from '../../../core/reference/reference.store';
-import { BreedPickerModalComponent, type BreedPick } from '../components/breed-picker.modal';
+import { BreedPickerModalComponent, type BreedPick } from '../../../shared/ui/breed-picker/breed-picker.modal';
 import { PetPhotosComponent, revokeNewPhotoUrls } from '../components/pet-photos.component';
 import { type Commune, GeoRepository } from '../data/geo.repository';
 import { type PhotoDraft, PhotoSyncError, type StoredPhotoDraft } from '../state/photo-draft';

@@ -1,0 +1,95 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Découvrir</ion-title>
+    @if (store.seeker()) {
+      <ion-buttons slot="end">
+        <ion-button (click)="openFilters()" aria-label="Filtres">
+          <ion-icon slot="icon-only" name="options" />
+          @if (filterCount()) {
+            <ion-badge color="primary">{{ filterCount() }}</ion-badge>
+          }
+        </ion-button>
+      </ion-buttons>
+    }
+  </ion-toolbar>
+</ion-header>
+
+<!-- No scrolling: the deck fills the screen and handles its own drag gestures. -->
+<ion-content [scrollY]="false">
+  @if (!pets.loaded()) {
+    @if (pets.error()) {
+      <app-empty-state emoji="🙀" title="Chargement impossible" message="Vérifiez votre connexion puis réessayez.">
+        <ion-button (click)="ionViewWillEnter()">Réessayer</ion-button>
+      </app-empty-state>
+    } @else {
+      <div class="center"><ion-spinner name="crescent" color="primary" /></div>
+    }
+  } @else if (pets.isEmpty()) {
+    <app-empty-state
+      emoji="🐶"
+      title="Ajoutez d'abord votre animal"
+      message="La découverte se fait au nom de votre chien ou de votre chat : créez sa fiche pour commencer."
+    >
+      <ion-button routerLink="/tabs/pets/new">Ajouter un animal</ion-button>
+    </app-empty-state>
+  } @else if (!store.seeker()) {
+    <app-empty-state
+      emoji="🙈"
+      title="Vos animaux sont masqués"
+      message="Rendez l'un d'eux visible dans Découvrir depuis sa fiche pour chercher un partenaire."
+    >
+      <ion-button routerLink="/tabs/pets">Mes animaux</ion-button>
+    </app-empty-state>
+  } @else {
+    <div class="layout">
+      <button type="button" class="seeker" [class.static]="store.seekers().length < 2" (click)="chooseSeeker()">
+        <span class="avatar" aria-hidden="true">
+          @if (seekerAvatar(); as url) {
+            <img [src]="url" alt="" />
+          } @else {
+            {{ emoji(store.seeker().species_id) }}
+          }
+        </span>
+        <span>Pour <strong>{{ store.seeker().name }}</strong></span>
+        @if (store.seekers().length > 1) {
+          <ion-icon name="chevron-down" aria-hidden="true" />
+        }
+      </button>
+
+      <div class="deck-area">
+        @if (cards().length) {
+          <app-swipe-deck [cards]="cards()" (swiped)="onSwiped($event)" (opened)="openDetail($event)" />
+        } @else if (store.status() === 'error') {
+          <app-empty-state emoji="🙀" title="Recherche impossible" message="Vérifiez votre connexion puis réessayez.">
+            <ion-button (click)="store.reload()">Réessayer</ion-button>
+          </app-empty-state>
+        } @else if (store.exhausted()) {
+          <app-empty-state
+            emoji="🐾"
+            title="Plus personne pour l'instant"
+            message="Revenez plus tard ou élargissez vos filtres pour voir d'autres profils."
+          >
+            <ion-button (click)="openFilters()">Modifier les filtres</ion-button>
+            @if (filterCount()) {
+              <ion-button fill="clear" (click)="resetFilters()">Réinitialiser les filtres</ion-button>
+            }
+          </app-empty-state>
+        } @else {
+          <div class="center"><ion-spinner name="crescent" color="primary" /></div>
+        }
+      </div>
+
+      <div class="actions" [class.disabled]="!cards().length">
+        <button type="button" class="round pass" aria-label="Passer" [disabled]="!cards().length" (click)="swipe('pass')">
+          <ion-icon name="close" />
+        </button>
+        <button type="button" class="round small info" aria-label="Voir la fiche" [disabled]="!cards().length" (click)="openTopDetail()">
+          <ion-icon name="information-circle" />
+        </button>
+        <button type="button" #likeButton class="round like" aria-label="J'aime" [disabled]="!cards().length" (click)="swipe('like')">
+          <ion-icon name="heart" />
+        </button>
+      </div>
+    </div>
+  }
+</ion-content>

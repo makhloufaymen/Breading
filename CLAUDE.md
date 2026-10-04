@@ -95,7 +95,7 @@ npm run build && npx ng lint && npx ng test --watch=false
 ionic cap run android -l --external         # live reload sur téléphone Android
 npx cap sync                                # après un build ou l'ajout d'un plugin
 supabase start | stop                       # Supabase local (Docker)
-supabase db reset                           # rejoue migrations + seed
+supabase db reset                           # rejoue migrations + seed (comptes de test camille@ / julien@ / sophie@test.fr, mot de passe password123)
 ```
 
 Prérequis Windows : Node 22+, Ionic CLI, Android Studio (SDK + JDK 21 intégré), Docker Desktop (démarré), Supabase CLI. Machine à 8 Go de RAM : services Supabase non indispensables désactivés dans `supabase/config.toml` (analytics, SMTP local, edge runtime, S3, vector) ; un seul émulateur à la fois.
@@ -111,7 +111,7 @@ Statut : `[ ]` à faire, `[x]` validé dans le navigateur et commité.
 - [x] 2. Référentiels (espèces, races, vaccins) + écran Compte
 - [x] 3. Mes animaux : CRUD, race en liste ou saisie libre, pedigree, vaccins, code postal → commune
 - [x] 4. Photos : caméra/galerie, compression, upload, ordre, suppression
-- [ ] 5. Découverte : `search_pets`, choix de l'animal qui cherche, filtres, pile de cartes à swiper, fiche détaillée
+- [x] 5. Découverte : `search_pets`, choix de l'animal qui cherche, filtres, pile de cartes à swiper, fiche détaillée
 - [ ] 6. Likes et matchs : swipes, trigger de match, modale « C'est un match ! », onglet Matchs, « qui m'a liké », annulation de match
 - [ ] 7. Messagerie temps réel : conversations, chat, non-lus
 - [ ] 8. Confiance et conformité : signalement, blocage, suppression de compte, confirmation d'email avec deep link

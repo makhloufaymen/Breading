@@ -105,6 +105,10 @@
   --app-space-6: 32px;
   --app-space-7: 48px;
 
+  // Text over photos (pet cards): warm dark scrim, light text, same in both themes
+  --app-scrim: rgba(40, 25, 18, 0.75);
+  --app-on-scrim: #fffaf5;
+
   // Motion
   --app-ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
   --app-ease-soft: cubic-bezier(0.25, 0.8, 0.25, 1);
