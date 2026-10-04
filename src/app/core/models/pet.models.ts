@@ -11,7 +11,16 @@ export const PET_COLUMNS =
 
 export type Pet = Omit<Tables<'pets'>, 'location'>;
 export type PetVaccination = Tables<'pet_vaccinations'>;
-export type PetDetail = Pet & { pet_vaccinations: PetVaccination[] };
+export type PetPhoto = Tables<'pet_photos'>;
+export type PetDetail = Pet & {
+  pet_vaccinations: PetVaccination[];
+  pet_photos: Pick<PetPhoto, 'id' | 'path' | 'position'>[];
+};
+/** A pet in the owner's list, with its main photo (if any). */
+export type PetListItem = Pet & { pet_photos: Pick<PetPhoto, 'path'>[] };
+
+/** Same limit as the pet_photos_before_insert trigger. */
+export const PET_PHOTOS_MAX = 6;
 
 /** Same bounds as the CHECK constraints on pets. */
 export const PET_NAME_MAX = 40;

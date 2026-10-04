@@ -42,6 +42,25 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"pet_photos": {
+                  Row: {
+                    "created_at": string,"id": string,"path": string,"pet_id": string,"position": number
+                  }
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"path": string,"pet_id": string,"position"?: number
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"path"?: string,"pet_id"?: string,"position"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "pet_photos_pet_id_fkey"
+      columns: ["pet_id"]
+isOneToOne: false
+      referencedRelation: "pets"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"pet_vaccinations": {
                   Row: {
                     "administered_on": string,"expires_on": string | null,"id": string,"pet_id": string,"vaccine_id": number
@@ -151,6 +170,9 @@ isOneToOne: false
           Functions: {
             "is_pet_owner":
 { Args: { "p_pet_id": string }; Returns: boolean
+                           },
+"reorder_pet_photos":
+{ Args: { "p_pet_id": string,"p_photo_ids": (string)[] }; Returns: undefined
                            },
 "set_pet_vaccinations":
 { Args: { "p_items": Json,"p_pet_id": string }; Returns: undefined

@@ -4,6 +4,7 @@ import {
   PET_COLUMNS,
   type Pet,
   type PetDetail,
+  type PetListItem,
   type VaccinationInput,
 } from '../../../core/models/pet.models';
 import type { TablesInsert, TablesUpdate } from '../../../core/supabase/database.types';
@@ -13,22 +14,26 @@ import { SUPABASE } from '../../../core/supabase/supabase.client';
 export class PetsRepository {
   private readonly supabase = inject(SUPABASE);
 
-  async listByOwner(ownerId: string): Promise<Pet[]> {
+  /** With the main photo only: embedded rows can be ordered and limited too. */
+  async listByOwner(ownerId: string): Promise<PetListItem[]> {
     const { data, error } = await this.supabase
       .from('pets')
-      .select(PET_COLUMNS)
+      .select(`${PET_COLUMNS}, pet_photos(path)`)
       .eq('owner_id', ownerId)
-      .order('created_at');
+      .order('created_at')
+      .order('position', { referencedTable: 'pet_photos' })
+      .limit(1, { referencedTable: 'pet_photos' });
     if (error) throw error;
     return data;
   }
 
-  /** Pet with its vaccinations (PostgREST embeds them through the foreign key). */
+  /** Pet with its vaccinations and photos (PostgREST embeds them through the foreign keys). */
   async getDetail(id: string): Promise<PetDetail> {
     const { data, error } = await this.supabase
       .from('pets')
-      .select(`${PET_COLUMNS}, pet_vaccinations(*)`)
+      .select(`${PET_COLUMNS}, pet_vaccinations(*), pet_photos(id, path, position)`)
       .eq('id', id)
+      .order('position', { referencedTable: 'pet_photos' })
       .single();
     if (error) throw error;
     return data;
@@ -48,7 +53,7 @@ export class PetsRepository {
     return data;
   }
 
-  /** Vaccinations go with it (on delete cascade). */
+  /** Vaccinations and photo rows go with it (on delete cascade); files must be removed separately. */
   async delete(id: string): Promise<void> {
     const { error } = await this.supabase.from('pets').delete().eq('id', id);
     if (error) throw error;

@@ -59,9 +59,9 @@ supabase/      config.toml, migrations/, seed.sql, functions/ (Edge Functions)
 
 `profiles`, `species`, `breeds`, `vaccines`, `pets` (avec `breed_id` ou `breed_other`, `postal_code`, `city`, `location geography(Point,4326)`), `pet_photos`, `pet_vaccinations`, `swipes` (`swiper_pet_id`, `target_pet_id`, `kind` like/pass), `matches` (paire canonique `pet_a_id < pet_b_id`), `messages` (référence `match_id` ; un match = une conversation), `blocks`, `reports`.
 
-RPC : `search_pets`, `unmatch`, `block_owner`, `mark_messages_read`, `set_pet_vaccinations` (remplace la liste des vaccins d'un animal en une transaction). Fonctions utilitaires `is_pet_owner`, `is_match_participant`, `are_compatible` en `security definer`.
+RPC : `search_pets`, `unmatch`, `block_owner`, `mark_messages_read`, `set_pet_vaccinations` (remplace la liste des vaccins d'un animal en une transaction), `reorder_pet_photos` (la première photo devient la principale). Fonctions utilitaires `is_pet_owner`, `is_match_participant`, `are_compatible` en `security definer`.
 
-Storage : bucket public `pet-photos`, chemins `{owner_id}/{pet_id}/{uuid}.jpg`, écriture limitée au dossier `auth.uid()`.
+Storage : bucket public `pet-photos` (JPEG uniquement, 2 Mo max), chemins `{owner_id}/{pet_id}/{uuid}.jpg`, écriture limitée au dossier `auth.uid()` et aux animaux de l'utilisateur. 6 photos max par animal ; `pet_photos.position` 0 = photo principale. Les fichiers ne sont pas supprimés par les cascades SQL : le client les supprime (photo retirée, animal supprimé).
 
 ## Conventions
 

@@ -19,7 +19,7 @@ import {
 import { addIcons } from 'ionicons';
 import { add, chevronForward, eyeOffOutline, locationOutline } from 'ionicons/icons';
 
-import type { Pet } from '../../../core/models/pet.models';
+import type { PetListItem } from '../../../core/models/pet.models';
 import { SPECIES_ID } from '../../../core/models/reference.models';
 import { ReferenceStore } from '../../../core/reference/reference.store';
 import { PetAgePipe } from '../../../shared/pipes/pet-age.pipe';
@@ -68,11 +68,11 @@ export class MyPetsPage {
     await event.target.complete();
   }
 
-  protected emoji(pet: Pet): string {
+  protected emoji(pet: PetListItem): string {
     return pet.species_id === SPECIES_ID.cat ? '🐱' : '🐶';
   }
 
-  protected breed(pet: Pet): string {
+  protected breed(pet: PetListItem): string {
     return this.reference.breedLabel(pet);
   }
 

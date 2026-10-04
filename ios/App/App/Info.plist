@@ -66,5 +66,9 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Breading utilise l'appareil photo pour prendre des photos de vos animaux.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Breading accède à vos photos pour illustrer la fiche de vos animaux.</string>
 </dict>
 </plist>

@@ -54,7 +54,9 @@ import {
 import { SPECIES_ID } from '../../../core/models/reference.models';
 import { ReferenceStore } from '../../../core/reference/reference.store';
 import { BreedPickerModalComponent, type BreedPick } from '../components/breed-picker.modal';
+import { PetPhotosComponent, revokeNewPhotoUrls } from '../components/pet-photos.component';
 import { type Commune, GeoRepository } from '../data/geo.repository';
+import { type PhotoDraft, PhotoSyncError, type StoredPhotoDraft } from '../state/photo-draft';
 import { PetsStore } from '../state/pets.store';
 
 const MIN_DATE = '1990-01-01'; // same bound as the CHECK constraints
@@ -127,6 +129,7 @@ function pedigreeValid(form: AbstractControl): ValidationErrors | null {
     IonCheckbox,
     IonSelect,
     IonSelectOption,
+    PetPhotosComponent,
   ],
 })
 export class PetFormPage implements OnInit {
@@ -195,6 +198,10 @@ export class PetFormPage implements OnInit {
   private readonly location = signal<GeoPoint | null>(null);
   private lookupId = 0;
 
+  /** Bound two-way to <app-pet-photos>; applied on save. */
+  protected readonly photos = signal<PhotoDraft[]>([]);
+  protected readonly removedPhotos = signal<StoredPhotoDraft[]>([]);
+
   constructor() {
     addIcons({ chevronForward, location, trashOutline });
   }
@@ -234,7 +241,7 @@ export class PetFormPage implements OnInit {
 
   /** Creation only: back to the species choice, discarding what was typed. */
   protected async changeSpecies(): Promise<void> {
-    if (!this.form.dirty) {
+    if (!this.form.dirty && !this.photos().length) {
       this.backToSpeciesChoice();
       return;
     }
@@ -261,6 +268,9 @@ export class PetFormPage implements OnInit {
     this.communes.set([]);
     this.communeStatus.set('idle');
     this.location.set(null);
+    revokeNewPhotoUrls(this.photos());
+    this.photos.set([]);
+    this.removedPhotos.set([]);
   }
 
   protected breedLabel(): string {
@@ -386,6 +396,9 @@ export class PetFormPage implements OnInit {
       isActive: pet.is_active,
     });
     this.buildVaccinations(pet.pet_vaccinations);
+    this.photos.set(
+      pet.pet_photos.map((p) => ({ kind: 'stored', key: p.id, id: p.id, path: p.path, url: this.store.photoUrl(p.path) })),
+    );
     // Offers the other communes of the postal code; the stored location is kept.
     void this.lookupCommunes(pet.postal_code, true);
   }
@@ -419,10 +432,16 @@ export class PetFormPage implements OnInit {
 
     this.saving.set(true);
     try {
-      await this.store.save(this.petId() ?? null, input);
+      await this.store.save(this.petId() ?? null, input, { items: this.photos(), removed: this.removedPhotos() });
       await this.toast(this.isEdit() ? 'Fiche mise à jour 🐾' : `Bienvenue ${input.name} ! 🐾`, 'success');
       await this.nav.navigateBack('/tabs/pets');
-    } catch {
+    } catch (error) {
+      if (error instanceof PhotoSyncError) {
+        // The pet itself is saved: leave the form so it can't be created twice.
+        await this.toast("Fiche enregistrée, mais des photos n'ont pas pu l'être. Réessayez depuis la fiche.", 'warning');
+        await this.nav.navigateBack('/tabs/pets');
+        return;
+      }
       await this.toast("L'enregistrement a échoué. Réessayez.", 'danger');
     } finally {
       this.saving.set(false);
@@ -434,7 +453,7 @@ export class PetFormPage implements OnInit {
     if (!id) return;
     const alert = await this.alerts.create({
       header: `Supprimer ${this.form.controls.name.value} ?`,
-      message: 'Sa fiche, ses vaccins et ses matchs seront définitivement supprimés.',
+      message: 'Sa fiche, ses photos, ses vaccins et ses matchs seront définitivement supprimés.',
       buttons: [
         { text: 'Annuler', role: 'cancel' },
         { text: 'Supprimer', role: 'destructive', handler: () => void this.delete(id) },

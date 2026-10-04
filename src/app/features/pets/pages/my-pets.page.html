@@ -46,7 +46,13 @@
     <div class="list">
       @for (pet of store.pets(); track pet.id) {
         <a class="pet" [routerLink]="['/tabs/pets', pet.id]" [class.inactive]="!pet.is_active">
-          <div class="avatar" [class.cat]="pet.species_id === catId" aria-hidden="true">{{ emoji(pet) }}</div>
+          <div class="avatar" [class.cat]="pet.species_id === catId" aria-hidden="true">
+            @if (pet.pet_photos[0]; as photo) {
+              <img [src]="store.photoUrl(photo.path)" alt="" loading="lazy" />
+            } @else {
+              {{ emoji(pet) }}
+            }
+          </div>
           <div class="info">
             <h2>
               {{ pet.name }}
