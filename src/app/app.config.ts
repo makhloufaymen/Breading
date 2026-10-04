@@ -10,7 +10,9 @@ export const appConfig: ApplicationConfig = {
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     // Same look on iOS and Android: force the iOS mode everywhere.
-    provideIonicAngular({ mode: 'ios' }),
+    // useSetInputAPI: modal/popover componentProps go through componentRef.setInput(),
+    // which works with signal inputs (the default Object.assign overwrites them).
+    provideIonicAngular({ mode: 'ios', useSetInputAPI: true }),
     provideRouter(routes, withPreloading(PreloadAllModules), withComponentInputBinding()),
     // Before the first screen renders: restore the light/dark choice and the
     // saved session (so guards know right away whether the user is signed in).

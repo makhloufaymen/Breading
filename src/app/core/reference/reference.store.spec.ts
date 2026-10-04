@@ -42,6 +42,13 @@ describe('ReferenceStore', () => {
     expect(store.vaccinesOf(2).length).toBe(1);
   });
 
+  it('labels a listed or free-text breed', async () => {
+    const store = TestBed.inject(ReferenceStore);
+    await store.ensureLoaded();
+    expect(store.breedLabel({ breed_id: 4, breed_other: null })).toBe('Persan');
+    expect(store.breedLabel({ breed_id: null, breed_other: 'Croisé' })).toBe('Croisé');
+  });
+
   it('loads only once', async () => {
     const store = TestBed.inject(ReferenceStore);
     await Promise.all([store.ensureLoaded(), store.ensureLoaded()]);

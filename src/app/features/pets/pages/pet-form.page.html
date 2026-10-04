@@ -1,0 +1,264 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/pets" text="Retour" />
+    </ion-buttons>
+    <ion-title>{{ isEdit() ? 'Modifier la fiche' : species() === null ? 'Nouvel animal' : 'Nouveau ' + speciesName() }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  @if (loading()) {
+    <div class="center"><ion-spinner name="crescent" color="primary" /></div>
+  } @else if (loadError()) {
+    <div class="center">
+      <p>Impossible de charger la fiche.</p>
+      <ion-button fill="clear" (click)="load()">Réessayer</ion-button>
+    </div>
+  } @else if (species() === null) {
+    <!-- ─── Creation, step 1: dog or cat ─── -->
+    <div class="choice">
+      <h2>Quel animal voulez-vous ajouter ?</h2>
+      <button type="button" class="species-card dog" (click)="chooseSpecies(speciesIds.dog)">
+        <span class="emoji" aria-hidden="true">🐶</span>
+        <span>Un chien</span>
+      </button>
+      <button type="button" class="species-card cat" (click)="chooseSpecies(speciesIds.cat)">
+        <span class="emoji" aria-hidden="true">🐱</span>
+        <span>Un chat</span>
+      </button>
+    </div>
+  } @else {
+    <form class="content" [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <!-- ─── Identity ─── -->
+      <section class="card">
+        <div class="species-banner">
+          <span class="emoji" aria-hidden="true">{{ species() === speciesIds.cat ? '🐱' : '🐶' }}</span>
+          <h2>{{ speciesName() === 'chat' ? 'Chat' : 'Chien' }}</h2>
+          @if (!isEdit()) {
+            <ion-button fill="clear" size="small" (click)="changeSpecies()">Changer</ion-button>
+          }
+        </div>
+        @if (isEdit()) {
+          <p class="hint">L'espèce ne peut pas être modifiée.</p>
+        }
+
+        <ion-input
+          formControlName="name"
+          autocapitalize="words"
+          label="Nom"
+          labelPlacement="stacked"
+          placeholder="Caramel"
+          errorText="Indiquez son nom."
+          [counter]="true"
+          [maxlength]="limits.name"
+        />
+
+        <p class="field-label">Sexe</p>
+        <ion-segment formControlName="sex">
+          <ion-segment-button value="male"><ion-label>♂ Mâle</ion-label></ion-segment-button>
+          <ion-segment-button value="female"><ion-label>♀ Femelle</ion-label></ion-segment-button>
+        </ion-segment>
+        @if (form.controls.sex.touched && form.controls.sex.invalid) {
+          <p class="error" role="alert">Choisissez le sexe.</p>
+        }
+
+        <ion-input
+          formControlName="birthDate"
+          type="date"
+          label="Date de naissance"
+          labelPlacement="stacked"
+          errorText="Une date passée, s'il vous plaît."
+          [min]="minDate"
+          [max]="today"
+        />
+      </section>
+
+      <!-- ─── Breed ─── -->
+      <section class="card">
+        <h2>Race</h2>
+        <ion-item class="picker" button lines="none" [detail]="false" (click)="pickBreed()">
+          <ion-label>Race</ion-label>
+          <ion-note slot="end" [class.placeholder]="breedLabel() === 'Choisir'">{{ breedLabel() }}</ion-note>
+          <ion-icon slot="end" name="chevron-forward" aria-hidden="true" />
+        </ion-item>
+        @if (showBreedError()) {
+          <p class="error" role="alert">Choisissez une race, ou « Autre race ».</p>
+        }
+        @if (form.controls.breedIsOther.value) {
+          <ion-input
+            formControlName="breedOther"
+            autocapitalize="sentences"
+            label="Quelle race ?"
+            labelPlacement="stacked"
+            placeholder="Croisé labrador"
+            [counter]="true"
+            [maxlength]="limits.breedOther"
+          />
+          @if (form.controls.breedOther.touched && form.hasError('breedOther')) {
+            <p class="error" role="alert">Entre 2 et {{ limits.breedOther }} caractères.</p>
+          }
+        }
+      </section>
+
+      <!-- ─── Pedigree ─── -->
+      <section class="card">
+        <ion-toggle formControlName="hasPedigree" justify="space-between" (ionChange)="onPedigreeToggle()">
+          <span class="toggle-title">Pedigree</span>
+        </ion-toggle>
+        <p class="hint">Déclaratif : Breading ne vérifie pas le pedigree.</p>
+        @if (form.controls.hasPedigree.value) {
+          <div class="row">
+            <ion-input
+              formControlName="pedigreeRegistry"
+              autocapitalize="characters"
+              label="Registre"
+              labelPlacement="stacked"
+              placeholder="LOF"
+              [maxlength]="limits.pedigree"
+            />
+            <ion-input
+              formControlName="pedigreeNumber"
+              label="Numéro (facultatif)"
+              labelPlacement="stacked"
+              [maxlength]="limits.pedigree"
+            />
+          </div>
+          @if (form.controls.pedigreeRegistry.touched && form.hasError('pedigreeRegistry')) {
+            <p class="error" role="alert">Indiquez le registre (LOF, LOOF…).</p>
+          }
+        }
+      </section>
+
+      <!-- ─── Location ─── -->
+      <section class="card">
+        <h2>Localisation</h2>
+        <p class="hint">Seul le centre de la commune est utilisé, jamais votre adresse.</p>
+        <ion-input
+          formControlName="postalCode"
+          inputmode="numeric"
+          autocomplete="postal-code"
+          label="Code postal"
+          labelPlacement="stacked"
+          placeholder="69001"
+          errorText="5 chiffres."
+          [maxlength]="5"
+          (ionInput)="onPostalCodeInput()"
+        />
+        @switch (communeStatus()) {
+          @case ('loading') {
+            <p class="hint"><ion-spinner name="dots" /></p>
+          }
+          @case ('not-found') {
+            <p class="error" role="alert">Aucune commune pour ce code postal.</p>
+          }
+          @case ('error') {
+            <p class="error" role="alert">Recherche de la commune impossible. Vérifiez votre connexion.</p>
+          }
+        }
+        @if (communes().length > 1) {
+          <ion-select
+            formControlName="city"
+            label="Commune"
+            labelPlacement="stacked"
+            interface="action-sheet"
+            placeholder="Choisir"
+            cancelText="Annuler"
+            (ionChange)="onCityChange()"
+          >
+            @for (commune of communes(); track commune.name) {
+              <ion-select-option [value]="commune.name">{{ commune.name }}</ion-select-option>
+            }
+          </ion-select>
+        } @else if (form.controls.city.value) {
+          <p class="city"><ion-icon name="location" color="primary" aria-hidden="true" /> {{ form.controls.city.value }}</p>
+        }
+        @if (form.controls.postalCode.touched && form.controls.postalCode.valid && !form.controls.city.value && communeStatus() === 'found') {
+          <p class="error" role="alert">Choisissez la commune.</p>
+        }
+      </section>
+
+      <!-- ─── Vaccinations ─── -->
+      <section class="card" formArrayName="vaccinations">
+        <h2>Vaccins</h2>
+        @for (group of vaccinationGroups; track group.controls.vaccineId.value; let i = $index) {
+          <div class="vaccine" [formGroupName]="i">
+            <ion-checkbox formControlName="done" justify="start" labelPlacement="end">
+              {{ vaccines()[i].name }}
+            </ion-checkbox>
+            @if (group.controls.done.value) {
+              <div class="row">
+                <ion-input
+                  formControlName="administeredOn"
+                  type="date"
+                  label="Fait le"
+                  labelPlacement="stacked"
+                  [min]="minDate"
+                  [max]="today"
+                />
+                <ion-input
+                  formControlName="expiresOn"
+                  type="date"
+                  label="Expire le (facultatif)"
+                  labelPlacement="stacked"
+                />
+              </div>
+              @if (group.touched && group.hasError('administeredOnRequired')) {
+                <p class="error" role="alert">Indiquez la date du vaccin.</p>
+              }
+              @if (group.touched && group.controls.administeredOn.hasError('pastDate')) {
+                <p class="error" role="alert">Une date passée, s'il vous plaît.</p>
+              }
+              @if (group.touched && group.hasError('expiresBeforeAdministered')) {
+                <p class="error" role="alert">L'expiration doit suivre la date du vaccin.</p>
+              }
+            }
+          </div>
+        }
+      </section>
+
+      <!-- ─── Description & visibility ─── -->
+      <section class="card">
+        <h2>Présentation</h2>
+        <ion-textarea
+          formControlName="description"
+          label="Description (facultatif)"
+          labelPlacement="stacked"
+          placeholder="Caractère, habitudes, ce que vous recherchez…"
+          [autoGrow]="true"
+          [rows]="3"
+          [counter]="true"
+          [maxlength]="limits.description"
+        />
+        <ion-toggle formControlName="isActive" justify="space-between">
+          <span class="toggle-title">Visible dans Découvrir</span>
+        </ion-toggle>
+        <p class="hint">Désactivez pour mettre la recherche en pause sans supprimer la fiche.</p>
+      </section>
+
+      @if (isEdit()) {
+        <ion-button expand="block" fill="clear" color="danger" (click)="confirmDelete()">
+          <ion-icon slot="start" name="trash-outline" />
+          Supprimer cet animal
+        </ion-button>
+      }
+
+      <!-- Lets the keyboard "Go" key submit the form -->
+      <button type="submit" hidden></button>
+    </form>
+  }
+</ion-content>
+
+@if (!loading() && !loadError() && species() !== null) {
+  <ion-footer>
+    <ion-toolbar>
+      <ion-button expand="block" [disabled]="saving()" (click)="save()">
+        @if (saving()) {
+          <ion-spinner name="crescent" />
+        } @else {
+          {{ isEdit() ? 'Enregistrer' : 'Créer la fiche' }}
+        }
+      </ion-button>
+    </ion-toolbar>
+  </ion-footer>
+}

@@ -28,7 +28,21 @@ export const routes: Routes = [
       },
       {
         path: 'pets',
-        loadComponent: () => import('./features/pets/pages/my-pets.page').then((m) => m.MyPetsPage),
+        children: [
+          {
+            path: '',
+            loadComponent: () => import('./features/pets/pages/my-pets.page').then((m) => m.MyPetsPage),
+          },
+          {
+            path: 'new',
+            loadComponent: () => import('./features/pets/pages/pet-form.page').then((m) => m.PetFormPage),
+          },
+          {
+            // petId is bound to the page's petId input (withComponentInputBinding).
+            path: ':petId',
+            loadComponent: () => import('./features/pets/pages/pet-form.page').then((m) => m.PetFormPage),
+          },
+        ],
       },
       {
         path: 'account',

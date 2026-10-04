@@ -42,6 +42,62 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"pet_vaccinations": {
+                  Row: {
+                    "administered_on": string,"expires_on": string | null,"id": string,"pet_id": string,"vaccine_id": number
+                  }
+                  Insert: {
+                    "administered_on": string,"expires_on"?: string | null,"id"?: string,"pet_id": string,"vaccine_id": number
+                  }
+                  Update: {
+                    "administered_on"?: string,"expires_on"?: string | null,"id"?: string,"pet_id"?: string,"vaccine_id"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "pet_vaccinations_pet_id_fkey"
+      columns: ["pet_id"]
+isOneToOne: false
+      referencedRelation: "pets"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pet_vaccinations_vaccine_id_fkey"
+      columns: ["vaccine_id"]
+isOneToOne: false
+      referencedRelation: "vaccines"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"pets": {
+                  Row: {
+                    "birth_date": string,"breed_id": number | null,"breed_other": string | null,"city": string,"created_at": string,"description": string | null,"has_pedigree": boolean,"id": string,"is_active": boolean,"location": unknown,"name": string,"owner_id": string,"pedigree_number": string | null,"pedigree_registry": string | null,"postal_code": string,"sex": Database["public"]['Enums']["pet_sex"],"species_id": number,"updated_at": string
+                  }
+                  Insert: {
+                    "birth_date": string,"breed_id"?: number | null,"breed_other"?: string | null,"city": string,"created_at"?: string,"description"?: string | null,"has_pedigree"?: boolean,"id"?: string,"is_active"?: boolean,"location": unknown,"name": string,"owner_id"?: string,"pedigree_number"?: string | null,"pedigree_registry"?: string | null,"postal_code": string,"sex": Database["public"]['Enums']["pet_sex"],"species_id": number,"updated_at"?: string
+                  }
+                  Update: {
+                    "birth_date"?: string,"breed_id"?: number | null,"breed_other"?: string | null,"city"?: string,"created_at"?: string,"description"?: string | null,"has_pedigree"?: boolean,"id"?: string,"is_active"?: boolean,"location"?: unknown,"name"?: string,"owner_id"?: string,"pedigree_number"?: string | null,"pedigree_registry"?: string | null,"postal_code"?: string,"sex"?: Database["public"]['Enums']["pet_sex"],"species_id"?: number,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "pets_breed_species_fkey"
+      columns: ["breed_id","species_id"]
+isOneToOne: false
+      referencedRelation: "breeds"
+      referencedColumns: ["id","species_id"]
+    },{
+      foreignKeyName: "pets_owner_id_fkey"
+      columns: ["owner_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pets_species_id_fkey"
+      columns: ["species_id"]
+isOneToOne: false
+      referencedRelation: "species"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"profiles": {
                   Row: {
                     "created_at": string,"display_name": string,"id": string
@@ -93,10 +149,15 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            [_ in never]: never
+            "is_pet_owner":
+{ Args: { "p_pet_id": string }; Returns: boolean
+                           },
+"set_pet_vaccinations":
+{ Args: { "p_items": Json,"p_pet_id": string }; Returns: undefined
+                           }
           }
           Enums: {
-            [_ in never]: never
+            "pet_sex": "male"|"female"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -216,7 +277,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            
+            "pet_sex": ["male", "female"]
           }
         }
 } as const

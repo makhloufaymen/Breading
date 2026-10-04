@@ -24,6 +24,7 @@ export class ReferenceStore {
   /** Breeds of one species, sorted the French way (É next to E). */
   readonly breedsBySpecies = computed(() => groupBySpecies(this._breeds(), (a, b) => collator.compare(a.name, b.name)));
   readonly vaccinesBySpecies = computed(() => groupBySpecies(this._vaccines()));
+  private readonly breedsById = computed(() => new Map(this._breeds().map((b) => [b.id, b])));
 
   /** Safe to call many times: only the first call hits the network (until a failure). */
   ensureLoaded(): Promise<void> {
@@ -36,6 +37,11 @@ export class ReferenceStore {
 
   breedsOf(speciesId: number): readonly Breed[] {
     return this.breedsBySpecies().get(speciesId) ?? [];
+  }
+
+  /** Breed label of a pet: the listed breed or the free-text one. */
+  breedLabel(pet: { breed_id: number | null; breed_other: string | null }): string {
+    return (pet.breed_id !== null ? this.breedsById().get(pet.breed_id)?.name : pet.breed_other) ?? '';
   }
 
   vaccinesOf(speciesId: number): readonly Vaccine[] {
