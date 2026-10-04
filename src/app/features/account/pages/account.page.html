@@ -13,11 +13,28 @@
 
   <div class="content">
     <section class="identity">
-      <div class="avatar" aria-hidden="true">{{ initial() }}</div>
-      <div>
-        <h2>{{ displayName() }}</h2>
-        <p>{{ email() }}</p>
-      </div>
+      @if (profiles.profile()) {
+        <div class="avatar" aria-hidden="true">{{ initial() }}</div>
+        <div class="who">
+          <h2>{{ displayName() }}</h2>
+          <p>{{ email() }}</p>
+        </div>
+        <ion-button fill="clear" shape="round" aria-label="Modifier mon nom" (click)="editName()">
+          <ion-icon slot="icon-only" name="pencil" />
+        </ion-button>
+      } @else if (profiles.error()) {
+        <div class="who">
+          <h2>Profil indisponible</h2>
+          <p>Vérifiez votre connexion.</p>
+        </div>
+        <ion-button fill="clear" (click)="profiles.reload()">Réessayer</ion-button>
+      } @else {
+        <ion-skeleton-text class="avatar" [animated]="true" />
+        <div class="who">
+          <ion-skeleton-text [animated]="true" style="width: 60%; height: 20px" />
+          <ion-skeleton-text [animated]="true" style="width: 80%" />
+        </div>
+      }
     </section>
 
     <ion-list lines="none">

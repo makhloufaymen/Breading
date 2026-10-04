@@ -53,7 +53,7 @@ supabase/      config.toml, migrations/, seed.sql, functions/ (Edge Functions)
 
 - **Routing** : `/login`, `/register` publics ; `/tabs` protégé par `authGuard` avec les onglets `discover`, `matches`, `pets`, `account`. Toutes les routes en `loadComponent`. Filtres, « C'est un match ! » et formulaires rapides en modales Ionic.
 - **État** : un store `@Injectable` par feature. Signals privés, `computed` publics en lecture seule, méthodes `async`. Pas de NgRx. RxJS seulement pour le flux Realtime.
-- **Accès aux données** : seuls les repositories (`features/*/data/`) importent le client Supabase. CRUD simple via `supabase.from(...)` ; logique métier via des RPC Postgres.
+- **Accès aux données** : seuls les repositories importent le client Supabase — dans `features/*/data/`, ou dans `core/<domaine>/` pour les données partagées par plusieurs features (`core/profile`, `core/reference`). Les référentiels (espèces, races, vaccins) se lisent via `ReferenceStore.ensureLoaded()`, chargés une fois par session. CRUD simple via `supabase.from(...)` ; logique métier via des RPC Postgres.
 
 ## Schéma (résumé)
 
@@ -107,7 +107,7 @@ Pas de téléphone physique pour l'instant : les tests se font sur **émulateur 
 Statut : `[ ]` à faire, `[x]` validé sur l'émulateur Android et commité.
 
 - [x] 0. Initialisation : git, projet Ionic, Capacitor Android, thème clair/sombre, coquille à 4 onglets, Supabase local
-- [ ] 1. Auth : inscription, connexion, déconnexion, persistance de session, guards, `profiles` (confirmation d'email désactivée en local)
+- [x] 1. Auth : inscription, connexion, déconnexion, persistance de session, guards, `profiles` (confirmation d'email désactivée en local)
 - [ ] 2. Référentiels (espèces, races, vaccins) + écran Compte
 - [ ] 3. Mes animaux : CRUD, race en liste ou saisie libre, pedigree, vaccins, code postal → commune
 - [ ] 4. Photos : caméra/galerie, compression, upload, ordre, suppression

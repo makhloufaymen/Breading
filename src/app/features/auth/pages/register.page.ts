@@ -13,6 +13,7 @@ import {
 
 import { authErrorMessage } from '../../../core/auth/auth-errors';
 import { AuthStore } from '../../../core/auth/auth.store';
+import { DISPLAY_NAME_MAX, DISPLAY_NAME_MIN } from '../../../core/models/profile.models';
 
 const PASSWORD_MIN_LENGTH = 8; // keep in sync with supabase/config.toml
 
@@ -35,8 +36,7 @@ export class RegisterPage {
   protected readonly passwordMinLength = PASSWORD_MIN_LENGTH;
   protected readonly form = inject(NonNullableFormBuilder).group(
     {
-      // Same bounds as the CHECK constraint on profiles.display_name.
-      displayName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
+      displayName: ['', [Validators.required, Validators.minLength(DISPLAY_NAME_MIN), Validators.maxLength(DISPLAY_NAME_MAX)]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(PASSWORD_MIN_LENGTH)]],
       confirmPassword: ['', Validators.required],

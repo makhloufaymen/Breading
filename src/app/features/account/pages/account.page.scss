@@ -12,8 +12,15 @@
   background: var(--app-surface);
   box-shadow: var(--app-shadow-soft);
 
+  .who {
+    flex: 1;
+    min-width: 0;
+  }
+
   h2 {
     margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
     font-size: 1.2rem;
     font-weight: 800;
   }
@@ -35,6 +42,7 @@
   color: var(--ion-color-tertiary-contrast);
   font-size: 1.5rem;
   font-weight: 900;
+  margin: 0;
 }
 
 .sign-out {

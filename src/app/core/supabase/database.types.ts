@@ -23,7 +23,26 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "profiles": {
+            "breeds": {
+                  Row: {
+                    "id": number,"name": string,"species_id": number
+                  }
+                  Insert: {
+                    "id"?: never,"name": string,"species_id": number
+                  }
+                  Update: {
+                    "id"?: never,"name"?: string,"species_id"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "breeds_species_id_fkey"
+      columns: ["species_id"]
+isOneToOne: false
+      referencedRelation: "species"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"profiles": {
                   Row: {
                     "created_at": string,"display_name": string,"id": string
                   }
@@ -35,6 +54,38 @@ export type Database = {
                   }
                   Relationships: [
                     
+                  ]
+                },"species": {
+                  Row: {
+                    "code": string,"id": number,"name": string
+                  }
+                  Insert: {
+                    "code": string,"id": number,"name": string
+                  }
+                  Update: {
+                    "code"?: string,"id"?: number,"name"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"vaccines": {
+                  Row: {
+                    "code": string,"id": number,"name": string,"species_id": number
+                  }
+                  Insert: {
+                    "code": string,"id"?: never,"name": string,"species_id": number
+                  }
+                  Update: {
+                    "code"?: string,"id"?: never,"name"?: string,"species_id"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "vaccines_species_id_fkey"
+      columns: ["species_id"]
+isOneToOne: false
+      referencedRelation: "species"
+      referencedColumns: ["id"]
+    }
                   ]
                 }
           }
