@@ -67,7 +67,8 @@ Storage : bucket public `pet-photos`, chemins `{owner_id}/{pet_id}/{uuid}.jpg`, 
 
 - **Code, noms, commentaires et commits en anglais ; interface en français codé en dur.**
 - RLS activé sur **toutes** les tables : c'est la seule couche de sécurité. Dans les politiques, écrire `(select auth.uid())`, pas `auth.uid()`.
-- Toute modification du schéma passe par une nouvelle migration (`supabase migration new <name>`), jamais par le dashboard. Régénérer ensuite les types : `supabase gen types typescript --local > src/app/core/supabase/database.types.ts`.
+- Toute modification du schéma passe par une nouvelle migration (`supabase migration new <name>`), jamais par le dashboard. Appliquer avec `supabase migration up --local`, puis régénérer les types : `npm run gen:types`.
+- Toute nouvelle table : RLS activé + politiques + `revoke`/`grant` par colonne si le client ne doit modifier que certaines colonnes. Vérifier les politiques avec un script qui joue deux utilisateurs (lecture/écriture croisées).
 - Ionic 9 : les composants standalone s'importent directement depuis `@ionic/angular` (`IonButton`, `IonList`…). Pas d'`IonicModule`. Les icônes s'enregistrent avec `addIcons()`.
 - Angular zoneless : l'état d'affichage passe par des signals (pas de mutation d'objets simples en espérant une détection de changements). Composants en `ChangeDetectionStrategy.OnPush` pour les composants de `shared/ui`.
 - Styles : aucune couleur en dur dans les composants, seulement des `var(--ion-…)` / `var(--app-…)`.
@@ -105,7 +106,7 @@ Pas de téléphone physique pour l'instant : les tests se font sur **émulateur 
 
 Statut : `[ ]` à faire, `[x]` validé sur l'émulateur Android et commité.
 
-- [ ] 0. Initialisation : git, projet Ionic, Capacitor Android, thème clair/sombre, coquille à 4 onglets, Supabase local
+- [x] 0. Initialisation : git, projet Ionic, Capacitor Android, thème clair/sombre, coquille à 4 onglets, Supabase local
 - [ ] 1. Auth : inscription, connexion, déconnexion, persistance de session, guards, `profiles` (confirmation d'email désactivée en local)
 - [ ] 2. Référentiels (espèces, races, vaccins) + écran Compte
 - [ ] 3. Mes animaux : CRUD, race en liste ou saisie libre, pedigree, vaccins, code postal → commune

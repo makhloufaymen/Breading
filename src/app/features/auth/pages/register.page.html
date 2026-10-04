@@ -1,0 +1,75 @@
+<ion-content>
+  <div class="auth">
+    <header class="hero">
+      <div class="blob" aria-hidden="true">🐾</div>
+      <h1>Bienvenue !</h1>
+      <p>Créez votre compte de propriétaire</p>
+    </header>
+
+    <form class="card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <ion-input
+        formControlName="displayName"
+        autocomplete="nickname"
+        autocapitalize="words"
+        label="Votre prénom ou pseudo"
+        labelPlacement="stacked"
+        placeholder="Camille"
+        helperText="Visible par les autres propriétaires."
+        errorText="Entre 2 et 50 caractères."
+        [counter]="true"
+        [maxlength]="50"
+      />
+      <ion-input
+        formControlName="email"
+        type="email"
+        inputmode="email"
+        autocomplete="email"
+        label="Email"
+        labelPlacement="stacked"
+        placeholder="vous@exemple.fr"
+        errorText="Saisissez une adresse email valide."
+      />
+      <ion-input
+        formControlName="password"
+        type="password"
+        autocomplete="new-password"
+        label="Mot de passe"
+        labelPlacement="stacked"
+        [helperText]="'Au moins ' + passwordMinLength + ' caractères.'"
+        [errorText]="'Au moins ' + passwordMinLength + ' caractères.'"
+      >
+        <ion-input-password-toggle slot="end" />
+      </ion-input>
+      <ion-input
+        formControlName="confirmPassword"
+        type="password"
+        autocomplete="new-password"
+        label="Confirmez le mot de passe"
+        labelPlacement="stacked"
+        errorText="Confirmez votre mot de passe."
+      >
+        <ion-input-password-toggle slot="end" />
+      </ion-input>
+      @if (form.hasError('passwordMismatch')) {
+        <p class="server-error" role="alert">Les deux mots de passe ne correspondent pas.</p>
+      }
+
+      @if (serverError(); as message) {
+        <p class="server-error" role="alert">{{ message }}</p>
+      }
+
+      <ion-button type="submit" expand="block" [disabled]="submitting()">
+        @if (submitting()) {
+          <ion-spinner name="crescent" />
+        } @else {
+          Créer mon compte
+        }
+      </ion-button>
+    </form>
+
+    <p class="switch">
+      Déjà inscrit ?
+      <a routerLink="/login" routerDirection="back">Se connecter</a>
+    </p>
+  </div>
+</ion-content>

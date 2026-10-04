@@ -1,0 +1,39 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Compte</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Compte</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="content">
+    <section class="identity">
+      <div class="avatar" aria-hidden="true">{{ initial() }}</div>
+      <div>
+        <h2>{{ displayName() }}</h2>
+        <p>{{ email() }}</p>
+      </div>
+    </section>
+
+    <ion-list lines="none">
+      <ion-list-header>
+        <ion-label>Apparence</ion-label>
+      </ion-list-header>
+      <ion-segment [value]="theme.preference()" (ionChange)="onThemeChange($event.detail.value)">
+        <ion-segment-button value="system"><ion-label>Auto</ion-label></ion-segment-button>
+        <ion-segment-button value="light"><ion-label>Clair</ion-label></ion-segment-button>
+        <ion-segment-button value="dark"><ion-label>Sombre</ion-label></ion-segment-button>
+      </ion-segment>
+    </ion-list>
+
+    <ion-button class="sign-out" expand="block" fill="clear" color="danger" (click)="confirmSignOut()">
+      <ion-icon slot="start" name="log-out-outline" />
+      Se déconnecter
+    </ion-button>
+  </div>
+</ion-content>

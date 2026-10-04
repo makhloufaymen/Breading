@@ -1,0 +1,23 @@
+// Shared keyframes, usable from any component style by name.
+// Durations and easings come from the --app-duration-* / --app-ease-* tokens.
+
+@keyframes app-fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes app-float {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-8px) rotate(3deg); }
+}
+
+@keyframes app-wobble {
+  0%, 100% { border-radius: 42% 58% 55% 45% / 50% 45% 55% 50%; transform: rotate(-2deg); }
+  50% { border-radius: 55% 45% 42% 58% / 45% 55% 50% 50%; transform: rotate(2deg); }
+}
+
+@keyframes app-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}

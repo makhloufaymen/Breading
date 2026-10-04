@@ -1,8 +1,21 @@
 import { Routes } from '@angular/router';
 
+import { authGuard, guestGuard } from './core/auth/auth.guards';
+
 export const routes: Routes = [
   {
+    path: 'login',
+    canMatch: [guestGuard],
+    loadComponent: () => import('./features/auth/pages/login.page').then((m) => m.LoginPage),
+  },
+  {
+    path: 'register',
+    canMatch: [guestGuard],
+    loadComponent: () => import('./features/auth/pages/register.page').then((m) => m.RegisterPage),
+  },
+  {
     path: 'tabs',
+    canMatch: [authGuard],
     loadComponent: () => import('./layout/tabs/tabs.page').then((m) => m.TabsPage),
     children: [
       {

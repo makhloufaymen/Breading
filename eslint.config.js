@@ -5,7 +5,7 @@ const angular = require("angular-eslint");
 module.exports = tseslint.config(
   {
     files: ["**/*.ts"],
-    ignores: ["projects/**/*"],
+    ignores: ["projects/**/*", "src/app/core/supabase/database.types.ts"],
     extends: [...angular.configs.tsRecommended],
     processor: angular.processInlineTemplates,
     rules: {

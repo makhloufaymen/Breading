@@ -3,6 +3,7 @@ import { PreloadAllModules, RouteReuseStrategy, provideRouter, withComponentInpu
 import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular';
 
 import { routes } from './app.routes';
+import { AuthStore } from './core/auth/auth.store';
 import { ThemeStore } from './core/theme/theme.store';
 
 export const appConfig: ApplicationConfig = {
@@ -11,7 +12,12 @@ export const appConfig: ApplicationConfig = {
     // Same look on iOS and Android: force the iOS mode everywhere.
     provideIonicAngular({ mode: 'ios' }),
     provideRouter(routes, withPreloading(PreloadAllModules), withComponentInputBinding()),
-    // Restore the saved light/dark choice before the first screen renders.
-    provideAppInitializer(() => inject(ThemeStore).load()),
+    // Before the first screen renders: restore the light/dark choice and the
+    // saved session (so guards know right away whether the user is signed in).
+    provideAppInitializer(() => {
+      const theme = inject(ThemeStore);
+      const auth = inject(AuthStore);
+      return Promise.all([theme.load(), auth.init()]);
+    }),
   ],
 };

@@ -5,7 +5,7 @@
   text-align: center;
   gap: var(--app-space-3);
   padding: var(--app-space-7) var(--app-space-5);
-  animation: fade-up var(--app-duration-slow) var(--app-ease-soft) both;
+  animation: app-fade-up var(--app-duration-slow) var(--app-ease-soft) both;
 }
 
 .emoji {
@@ -17,7 +17,7 @@
   border-radius: 50%;
   background: var(--app-surface-muted);
   box-shadow: var(--app-shadow-soft);
-  animation: float 3.2s ease-in-out infinite;
+  animation: app-float 3.2s ease-in-out infinite;
 }
 
 h2 {
@@ -33,12 +33,3 @@ p {
   line-height: 1.5;
 }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0) rotate(-3deg); }
-  50% { transform: translateY(-8px) rotate(3deg); }
-}
-
-@keyframes fade-up {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
-}

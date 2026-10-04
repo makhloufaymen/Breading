@@ -1,0 +1,49 @@
+<ion-content>
+  <div class="auth">
+    <header class="hero">
+      <div class="blob" aria-hidden="true">🐶🐱</div>
+      <h1>Breading</h1>
+      <p>Trouvez le partenaire idéal pour votre compagnon</p>
+    </header>
+
+    <form class="card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <ion-input
+        formControlName="email"
+        type="email"
+        inputmode="email"
+        autocomplete="email"
+        label="Email"
+        labelPlacement="stacked"
+        placeholder="vous@exemple.fr"
+        errorText="Saisissez une adresse email valide."
+      />
+      <ion-input
+        formControlName="password"
+        type="password"
+        autocomplete="current-password"
+        label="Mot de passe"
+        labelPlacement="stacked"
+        errorText="Saisissez votre mot de passe."
+      >
+        <ion-input-password-toggle slot="end" />
+      </ion-input>
+
+      @if (serverError(); as message) {
+        <p class="server-error" role="alert">{{ message }}</p>
+      }
+
+      <ion-button type="submit" expand="block" [disabled]="submitting()">
+        @if (submitting()) {
+          <ion-spinner name="crescent" />
+        } @else {
+          Se connecter
+        }
+      </ion-button>
+    </form>
+
+    <p class="switch">
+      Pas encore de compte ?
+      <a routerLink="/register" routerDirection="forward">Créer un compte</a>
+    </p>
+  </div>
+</ion-content>
