@@ -29,6 +29,31 @@ ion-item-sliding {
   .heart {
     font-size: 0.9em;
   }
+
+  .preview {
+    color: var(--ion-color-medium);
+
+    &.new {
+      color: var(--ion-color-primary-shade);
+      font-weight: 700;
+    }
+  }
+
+  &.unread .preview {
+    color: var(--ion-text-color);
+    font-weight: 700;
+  }
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--app-space-1);
+
+  ion-note {
+    font-size: 0.75rem;
+  }
 }
 
 .avatar {

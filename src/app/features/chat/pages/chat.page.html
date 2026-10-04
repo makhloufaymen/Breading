@@ -1,0 +1,105 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/matches" text="" />
+    </ion-buttons>
+    @if (conversation(); as c) {
+      <button type="button" class="who" (click)="openProfile()">
+        <span class="avatar" aria-hidden="true">
+          @if (otherPhoto(); as url) {
+            <img [src]="url" alt="" />
+          } @else {
+            {{ otherEmoji() }}
+          }
+        </span>
+        <span class="names">
+          <strong>{{ c.other_pet_name }}</strong>
+          <small>{{ c.other_owner_name }} · avec {{ c.my_pet_name }}</small>
+        </span>
+      </button>
+    }
+    <ion-buttons slot="end">
+      <ion-button (click)="openMenu()" aria-label="Options">
+        <ion-icon slot="icon-only" name="ellipsis-horizontal" />
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  @if (store.loading()) {
+    <div class="center"><ion-spinner name="crescent" color="primary" /></div>
+  } @else if (store.error()) {
+    <div class="center">
+      <p>Impossible de charger la conversation.</p>
+      <ion-button fill="clear" (click)="ionViewWillEnter()">Réessayer</ion-button>
+    </div>
+  } @else {
+    <div class="thread">
+      @if (store.hasMore()) {
+        <ion-button class="older" fill="clear" size="small" (click)="store.loadOlder()">Messages précédents</ion-button>
+      }
+
+      @if (!items().length) {
+        <div class="intro">
+          <div class="emoji" aria-hidden="true">🎉</div>
+          <p>
+            Match le {{ matchedOn() }} !<br />
+            Dites bonjour à {{ conversation()?.other_owner_name }}.
+          </p>
+          <div class="chips">
+            @for (text of quickReplies; track text) {
+              <button type="button" (click)="useQuickReply(text)">{{ text }}</button>
+            }
+          </div>
+        </div>
+      }
+
+      @for (item of items(); track item.key) {
+        @if (item.kind === 'day') {
+          <p class="day">{{ item.label }}</p>
+        } @else {
+          <div class="row" [class.mine]="item.mine">
+            <div
+              class="bubble"
+              [class.pending]="item.message.status === 'pending'"
+              [class.failed]="item.message.status === 'failed'"
+              (click)="item.message.status === 'failed' && store.retry(item.message.id)"
+            >
+              <span class="body">{{ item.message.body }}</span>
+              <span class="meta">
+                {{ time(item.message) }}
+                @if (item.message.status === 'failed') {
+                  <ion-icon name="alert-circle" aria-hidden="true" /> Non envoyé, touchez pour réessayer
+                }
+              </span>
+            </div>
+          </div>
+          @if (item.read) {
+            <p class="read">Lu</p>
+          }
+        }
+      }
+    </div>
+  }
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <div class="composer">
+      <ion-textarea
+        aria-label="Message"
+        placeholder="Votre message…"
+        autocapitalize="sentences"
+        [value]="draft()"
+        [autoGrow]="true"
+        [rows]="1"
+        [maxlength]="max"
+        (ionInput)="onInput($event.detail.value)"
+      />
+      <ion-button shape="round" aria-label="Envoyer" [disabled]="!draft().trim()" (click)="sendDraft()">
+        <ion-icon slot="icon-only" name="send" />
+      </ion-button>
+    </div>
+  </ion-toolbar>
+</ion-footer>

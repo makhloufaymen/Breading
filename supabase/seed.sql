@@ -174,3 +174,51 @@ insert into public.swipes (swiper_pet_id, target_pet_id, kind) values
   ('5eed0001-0000-0000-0000-000000000005', '5eed0001-0000-0000-0000-000000000002', 'like'),  -- Bella → Oscar
   ('5eed0001-0000-0000-0000-000000000012', '5eed0001-0000-0000-0000-000000000011', 'like')   -- Simba → Mochi
 on conflict (swiper_pet_id, target_pet_id) do nothing;
+
+-- ─── Conversations between test accounts ─────────────────────
+-- Matches dated over the last weeks; 3 in 4 have a conversation of 2 to 8
+-- messages, the last one sometimes still unread.
+update public.matches m
+set created_at = now() - make_interval(days => 1 + abs(hashtext(m.id::text)) % 20, hours => abs(hashtext(m.id::text)) % 12)
+where m.pet_a_id::text like '5eed%' and m.pet_b_id::text like '5eed%'
+  and not exists (select 1 from public.messages x where x.match_id = m.id);
+
+with
+lines(k, body) as (values
+  (0,  'Bonjour ! Votre animal est vraiment adorable 😍'),
+  (1,  'Merci beaucoup ! Le vôtre aussi, quelle bouille !'),
+  (2,  'Il est à jour de ses vaccins, je peux vous envoyer le carnet.'),
+  (3,  'Parfait, de mon côté tout est en règle aussi.'),
+  (4,  'Vous seriez disponible pour une première rencontre ce week-end ?'),
+  (5,  'Samedi après-midi, ça vous irait ? Au parc près de chez moi.'),
+  (6,  'Oui super, vers 15 h ?'),
+  (7,  'Parfait, à samedi alors ! 🐾'),
+  (8,  'Il a un caractère très doux, il s''entend bien avec tout le monde.'),
+  (9,  'Elle est un peu timide au début, mais très câline ensuite.'),
+  (10, 'Vous avez déjà eu une portée ?'),
+  (11, 'Non, ce serait la première fois. Et vous ?')
+),
+convo as (
+  select m.id, m.created_at, a.owner_id as owner_a, b.owner_id as owner_b, abs(hashtext(m.id::text)) as h
+  from public.matches m
+  join public.pets a on a.id = m.pet_a_id
+  join public.pets b on b.id = m.pet_b_id
+  where a.id::text like '5eed%' and b.id::text like '5eed%'
+    and abs(hashtext(m.id::text)) % 4 <> 0
+    and not exists (select 1 from public.messages x where x.match_id = m.id)
+),
+gen as (
+  select c.*, n, 2 + c.h % 7 as total
+  from convo c cross join generate_series(1, 8) as n
+  where n <= 2 + c.h % 7
+)
+insert into public.messages (match_id, sender_id, body, created_at, read_at)
+select g.id,
+       case when g.n % 2 = 1 then g.owner_a else g.owner_b end,
+       l.body,
+       g.created_at + make_interval(mins => g.n * (20 + g.h % 90)),
+       -- Everything read, except the last message in 1 conversation out of 3.
+       case when g.n = g.total and g.h % 3 = 0 then null
+            else g.created_at + make_interval(mins => g.n * (20 + g.h % 90) + 5) end
+from gen g
+join lines l on l.k = (g.n - 1 + g.h % 3) % 12;

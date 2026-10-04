@@ -9,7 +9,7 @@ export interface MatchPetView {
 
 const CONFETTI = ['🐾', '💛', '🦴', '✨', '💕', '🐾', '🌸', '💛', '✨', '🦴', '💕', '🐾'];
 
-/** "C'est un match !" celebration. Dismisses with role 'matches' or 'continue'. */
+/** "C'est un match !" celebration. Dismisses with role 'message' or 'continue'. */
 @Component({
   selector: 'app-match-modal',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -41,7 +41,7 @@ const CONFETTI = ['🐾', '💛', '🦴', '✨', '💕', '🐾', '🌸', '💛',
         </div>
 
         <div class="buttons">
-          <ion-button expand="block" (click)="close('matches')">Voir mes matchs</ion-button>
+          <ion-button expand="block" (click)="close('message')">Envoyer un message</ion-button>
           <ion-button expand="block" fill="clear" (click)="close('continue')">Continuer à découvrir</ion-button>
         </div>
       </div>
@@ -125,7 +125,7 @@ export class MatchModalComponent {
     size: 20 + ((i * 7) % 18),
   }));
 
-  protected close(role: 'matches' | 'continue'): void {
+  protected close(role: 'message' | 'continue'): void {
     void this.modals.dismiss(null, role);
   }
 }

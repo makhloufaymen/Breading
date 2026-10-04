@@ -5,7 +5,7 @@
   <ion-toolbar>
     <ion-segment [value]="tab()" (ionChange)="onTabChange($event.detail.value)">
       <ion-segment-button value="matches">
-        <ion-label>Matchs{{ store.matches().length ? ' (' + store.matches().length + ')' : '' }}</ion-label>
+        <ion-label>Messages{{ store.unreadTotal() ? ' (' + store.unreadTotal() + ')' : '' }}</ion-label>
       </ion-segment-button>
       <ion-segment-button value="likes">
         <ion-label>Ils vous aiment{{ store.likesCount() ? ' (' + store.likesCount() + ')' : '' }}</ion-label>
@@ -31,21 +31,30 @@
     <!-- ─── Matches ─── -->
     @if (store.matches().length) {
       <ion-list lines="none" class="list">
-        @for (match of store.matches(); track match.id) {
+        @for (match of store.matches(); track match.match_id) {
           <ion-item-sliding #sliding>
-            <ion-item button [detail]="false" class="row" (click)="openMatch(match)">
+            <ion-item button [detail]="false" class="row" [class.unread]="match.unread_count" (click)="openChat(match)">
               <div slot="start" class="avatar" aria-hidden="true">
-                @if (photo(match.other.photoPath); as url) {
+                @if (photo(match.other_pet_photo); as url) {
                   <img [src]="url" alt="" />
                 } @else {
-                  {{ emoji(match.other.speciesId) }}
+                  {{ emoji(match.other_species_id) }}
                 }
               </div>
               <ion-label>
-                <h2>{{ match.other.name }} <span class="heart">💛</span> {{ match.mine.name }}</h2>
-                <p>{{ match.other.ownerName }} · {{ match.other.city }}</p>
+                <h2>{{ match.other_pet_name }} <span class="heart">💛</span> {{ match.my_pet_name }}</h2>
+                @if (match.last_message; as text) {
+                  <p class="preview">{{ match.last_message_mine ? 'Vous : ' : '' }}{{ text }}</p>
+                } @else {
+                  <p class="preview new">Nouveau match ! Dites bonjour à {{ match.other_owner_name }} 👋</p>
+                }
               </ion-label>
-              <ion-note slot="end">{{ matchDate(match) }}</ion-note>
+              <div slot="end" class="side">
+                <ion-note>{{ activity(match) }}</ion-note>
+                @if (match.unread_count) {
+                  <ion-badge color="primary">{{ match.unread_count }}</ion-badge>
+                }
+              </div>
             </ion-item>
             <ion-item-options side="end">
               <ion-item-option color="danger" (click)="confirmUnmatch(match, sliding)">

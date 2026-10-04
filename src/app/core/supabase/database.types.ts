@@ -67,6 +67,31 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"messages": {
+                  Row: {
+                    "body": string,"created_at": string,"id": string,"match_id": string,"read_at": string | null,"sender_id": string
+                  }
+                  Insert: {
+                    "body": string,"created_at"?: string,"id"?: string,"match_id": string,"read_at"?: string | null,"sender_id"?: string
+                  }
+                  Update: {
+                    "body"?: string,"created_at"?: string,"id"?: string,"match_id"?: string,"read_at"?: string | null,"sender_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "messages_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "matches"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "messages_sender_id_fkey"
+      columns: ["sender_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"pet_photos": {
                   Row: {
                     "created_at": string,"id": string,"path": string,"pet_id": string,"position": number
@@ -229,6 +254,14 @@ isOneToOne: false
                            },
 "is_pet_owner":
 { Args: { "p_pet_id": string }; Returns: boolean
+                           },
+"mark_messages_read":
+{ Args: { "p_match_id": string }; Returns: undefined
+                           },
+"my_conversations":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "last_message": string,"last_message_at": string,"last_message_mine": boolean,"match_id": string,"matched_at": string,"my_pet_id": string,"my_pet_name": string,"my_pet_photo": string,"other_city": string,"other_owner_name": string,"other_pet_id": string,"other_pet_name": string,"other_pet_photo": string,"other_species_id": number,"unread_count": number
+            }[]
                            },
 "received_likes":
 { Args: Record<PropertyKey, never>; Returns: {

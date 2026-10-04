@@ -4,6 +4,9 @@
       <ion-tab-button [tab]="t.tab" [href]="'/tabs/' + t.tab">
         <ion-icon aria-hidden="true" [name]="t.icon"></ion-icon>
         <ion-label>{{ t.label }}</ion-label>
+        @if (t.tab === 'matches' && matches.unreadTotal()) {
+          <ion-badge color="primary">{{ matches.unreadTotal() }}</ion-badge>
+        }
       </ion-tab-button>
     }
   </ion-tab-bar>

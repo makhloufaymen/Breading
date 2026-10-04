@@ -1,78 +1,80 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { Subject } from 'rxjs';
 
 import { AuthStore } from '../../../core/auth/auth.store';
+import { MessagesRepository } from '../../../core/messages/messages.repository';
+import type { Conversation, Message, MessageChange } from '../../../core/models/chat.models';
 import type { ReceivedLike } from '../../../core/models/match.models';
 import { PhotosRepository } from '../../../core/photos/photos.repository';
 import { SwipesRepository } from '../../../core/swipes/swipes.repository';
 import { MatchesRepository } from '../data/matches.repository';
 import { MatchesStore } from './matches.store';
 
-const pet = (id: string, ownerId: string, photos: { path: string; position: number }[] = []) => ({
-  id,
-  name: id.toUpperCase(),
-  owner_id: ownerId,
-  species_id: 1,
-  sex: 'male',
-  birth_date: '2022-01-01',
-  breed_id: null,
-  breed_other: 'Croisé',
-  city: 'Paris',
-  pet_photos: photos,
-  owner: { display_name: `owner of ${id}` },
-});
+const conversation = (id: string, unread = 0) => ({ match_id: id, unread_count: unread, last_message: null }) as Conversation;
+const message = (matchId: string, senderId: string, body = 'Coucou') =>
+  ({ id: crypto.randomUUID(), match_id: matchId, sender_id: senderId, body, created_at: new Date().toISOString() }) as Message;
 
 describe('MatchesStore', () => {
+  let live: Subject<MessageChange>;
+  let conversations: Conversation[];
   let likes: ReceivedLike[];
   let swipeResult: string | null;
 
   beforeEach(() => {
-    likes = [{ id: 'liker', my_pet_id: 'rex', my_pet_name: 'Rex', name: 'Nala' } as ReceivedLike];
+    live = new Subject();
+    conversations = [conversation('m1'), conversation('m2', 2)];
+    likes = [{ id: 'liker', my_pet_id: 'rex' } as ReceivedLike];
     swipeResult = null;
     TestBed.configureTestingModule({
       providers: [
         { provide: AuthStore, useValue: { user: signal({ id: 'me' }) } },
         { provide: PhotosRepository, useValue: {} },
+        { provide: MessagesRepository, useValue: { changes: () => live } },
         { provide: SwipesRepository, useValue: { swipe: async () => swipeResult } },
         {
           provide: MatchesRepository,
-          useValue: {
-            // My pet is pet_b here: the store must still put it on the "mine" side.
-            list: async () => [
-              {
-                id: 'm1',
-                created_at: '2026-10-04T10:00:00Z',
-                pet_a: pet('nala', 'other', [
-                  { path: 'second.jpg', position: 1 },
-                  { path: 'main.jpg', position: 0 },
-                ]),
-                pet_b: pet('rex', 'me'),
-              },
-            ],
-            receivedLikes: async () => likes,
-          },
+          useValue: { conversations: async () => conversations, receivedLikes: async () => likes },
         },
       ],
     });
   });
 
-  it('puts my pet on the "mine" side and picks the main photo of the other one', async () => {
+  async function loadedStore(): Promise<MatchesStore> {
     const store = TestBed.inject(MatchesStore);
+    TestBed.tick(); // runs the sign-in effect (subscribes, loads)
     await store.load();
-    const [match] = store.matches();
-    expect(match.mine.id).toBe('rex');
-    expect(match.other.id).toBe('nala');
-    expect(match.other.photoPath).toBe('main.jpg');
-    expect(match.other.ownerName).toBe('owner of nala');
+    return store;
+  }
+
+  it('counts unread messages across conversations', async () => {
+    const store = await loadedStore();
+    expect(store.unreadTotal()).toBe(2);
+  });
+
+  it('a message received moves the conversation up and counts as unread', async () => {
+    const store = await loadedStore();
+    live.next({ event: 'INSERT', message: message('m2', 'other', 'Salut') });
+    expect(store.matches()[0].match_id).toBe('m2');
+    expect(store.matches()[0].last_message).toBe('Salut');
+    expect(store.unreadTotal()).toBe(3);
+  });
+
+  it('my own messages and the open conversation do not count as unread', async () => {
+    const store = await loadedStore();
+    live.next({ event: 'INSERT', message: message('m1', 'me') });
+    store.setOpenConversation('m2');
+    live.next({ event: 'INSERT', message: message('m2', 'other') });
+    expect(store.unreadTotal()).toBe(0);
+    expect(store.find('m1')?.last_message_mine).toBe(true);
   });
 
   it('removes an answered like and reports the match', async () => {
-    const store = TestBed.inject(MatchesStore);
-    await store.load();
+    const store = await loadedStore();
     const like = store.likes()[0];
     likes = [];
-    swipeResult = 'm2';
-    expect(await store.answerLike(like, 'like')).toBe('m2');
+    swipeResult = 'm3';
+    expect(await store.answerLike(like, 'like')).toBe('m3');
     expect(store.likesCount()).toBe(0);
   });
 });

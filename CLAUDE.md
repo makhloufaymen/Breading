@@ -59,7 +59,7 @@ supabase/      config.toml, migrations/, seed.sql, functions/ (Edge Functions)
 
 `profiles`, `species`, `breeds`, `vaccines`, `pets` (avec `breed_id` ou `breed_other`, `postal_code`, `city`, `location geography(Point,4326)`), `pet_photos`, `pet_vaccinations`, `swipes` (`swiper_pet_id`, `target_pet_id`, `kind` like/pass), `matches` (paire canonique `pet_a_id < pet_b_id`), `messages` (référence `match_id` ; un match = une conversation), `blocks`, `reports`.
 
-RPC : `search_pets`, `swipe_pet` (enregistre like/pass, renvoie l'id du match créé), `received_likes` (likes reçus sans réponse), `unmatch`, `block_owner`, `mark_messages_read`, `set_pet_vaccinations` (remplace la liste des vaccins d'un animal en une transaction), `reorder_pet_photos` (la première photo devient la principale). Fonctions utilitaires `is_pet_owner`, `is_match_participant`, `are_compatible` en `security definer`.
+RPC : `search_pets`, `swipe_pet` (enregistre like/pass, renvoie l'id du match créé), `received_likes` (likes reçus sans réponse), `unmatch`, `block_owner`, `mark_messages_read`, `my_conversations` (matchs avec dernier message et non-lus), `set_pet_vaccinations` (remplace la liste des vaccins d'un animal en une transaction), `reorder_pet_photos` (la première photo devient la principale). Fonctions utilitaires `is_pet_owner`, `is_match_participant`, `are_compatible` en `security definer`.
 
 Storage : bucket public `pet-photos` (JPEG uniquement, 2 Mo max), chemins `{owner_id}/{pet_id}/{uuid}.jpg`, écriture limitée au dossier `auth.uid()` et aux animaux de l'utilisateur. 6 photos max par animal ; `pet_photos.position` 0 = photo principale. Les fichiers ne sont pas supprimés par les cascades SQL : le client les supprime (photo retirée, animal supprimé).
 
@@ -115,6 +115,6 @@ Statut : `[ ]` à faire, `[x]` validé dans le navigateur et commité.
 - [x] 4. Photos : caméra/galerie, compression, upload, ordre, suppression
 - [x] 5. Découverte : `search_pets`, choix de l'animal qui cherche, filtres, pile de cartes à swiper, fiche détaillée
 - [x] 6. Likes et matchs : swipes, trigger de match, modale « C'est un match ! », onglet Matchs, « qui m'a liké », annulation de match
-- [ ] 7. Messagerie temps réel : conversations, chat, non-lus
+- [x] 7. Messagerie temps réel : conversations, chat, non-lus
 - [ ] 8. Confiance et conformité : signalement, blocage, suppression de compte, confirmation d'email avec deep link
 - [ ] 9. Finition : états vides, erreurs, hors ligne, icône, splash, build Android signé

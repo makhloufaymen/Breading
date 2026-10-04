@@ -1,25 +1,16 @@
 import { Injectable, inject } from '@angular/core';
 
+import type { Conversation } from '../../../core/models/chat.models';
 import type { ReceivedLike } from '../../../core/models/match.models';
 import { SUPABASE } from '../../../core/supabase/supabase.client';
-
-/** Columns of each pet embedded in a match row. */
-const MATCH_PET =
-  'id, name, owner_id, species_id, sex, birth_date, breed_id, breed_other, city, pet_photos(path, position), owner:profiles(display_name)';
 
 @Injectable({ providedIn: 'root' })
 export class MatchesRepository {
   private readonly supabase = inject(SUPABASE);
 
-  /**
-   * Matches with both pets embedded. matches has two foreign keys to pets, so
-   * each embed names its key (pets!matches_pet_a_id_fkey) and gets an alias.
-   */
-  async list() {
-    const { data, error } = await this.supabase
-      .from('matches')
-      .select(`id, created_at, pet_a:pets!matches_pet_a_id_fkey(${MATCH_PET}), pet_b:pets!matches_pet_b_id_fkey(${MATCH_PET})`)
-      .order('created_at', { ascending: false });
+  /** My matches as conversations: both pets, last message, unread count (RPC my_conversations). */
+  async conversations(): Promise<Conversation[]> {
+    const { data, error } = await this.supabase.rpc('my_conversations');
     if (error) throw error;
     return data;
   }
@@ -36,5 +27,3 @@ export class MatchesRepository {
     if (error) throw error;
   }
 }
-
-export type MatchRow = Awaited<ReturnType<MatchesRepository['list']>>[number];

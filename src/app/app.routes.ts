@@ -24,7 +24,17 @@ export const routes: Routes = [
       },
       {
         path: 'matches',
-        loadComponent: () => import('./features/matches/pages/matches.page').then((m) => m.MatchesPage),
+        children: [
+          {
+            path: '',
+            loadComponent: () => import('./features/matches/pages/matches.page').then((m) => m.MatchesPage),
+          },
+          {
+            // matchId is bound to the page's matchId input (withComponentInputBinding).
+            path: ':matchId',
+            loadComponent: () => import('./features/chat/pages/chat.page').then((m) => m.ChatPage),
+          },
+        ],
       },
       {
         path: 'pets',

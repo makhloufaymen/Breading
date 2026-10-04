@@ -11,6 +11,7 @@ import {
   IonItemOption,
   IonItemOptions,
   IonItemSliding,
+  IonBadge,
   IonLabel,
   IonList,
   IonNote,
@@ -23,6 +24,7 @@ import {
   IonTitle,
   IonToolbar,
   ModalController,
+  NavController,
   type RefresherCustomEvent,
   ToastController,
 } from '@ionic/angular';
@@ -30,7 +32,8 @@ import { addIcons } from 'ionicons';
 import { close, heart, heartDislikeOutline } from 'ionicons/icons';
 
 import { distanceLabel } from '../../../core/models/discover.models';
-import type { MatchItem, ReceivedLike } from '../../../core/models/match.models';
+import type { Conversation } from '../../../core/models/chat.models';
+import type { ReceivedLike } from '../../../core/models/match.models';
 import { SPECIES_ID } from '../../../core/models/reference.models';
 import { ReferenceStore } from '../../../core/reference/reference.store';
 import type { SwipeKind } from '../../../core/swipes/swipes.repository';
@@ -41,7 +44,8 @@ import { MatchModalComponent } from '../../../shared/ui/match-modal/match-modal.
 import { PetDetailModalComponent } from '../../../shared/ui/pet-detail/pet-detail.modal';
 import { MatchesStore } from '../state/matches.store';
 
-const dateFormat = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long' });
+const timeFormat = new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit' });
+const dateFormat = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' });
 
 @Component({
   selector: 'app-matches',
@@ -62,6 +66,7 @@ const dateFormat = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'lo
     IonItemSliding,
     IonItemOptions,
     IonItemOption,
+    IonBadge,
     IonNote,
     IonButton,
     IonIcon,
@@ -79,6 +84,7 @@ export class MatchesPage {
   private readonly modals = inject(ModalController);
   private readonly alerts = inject(AlertController);
   private readonly toasts = inject(ToastController);
+  private readonly nav = inject(NavController);
 
   protected readonly tab = signal<'matches' | 'likes'>('matches');
   /** Like being answered: its buttons are disabled meanwhile. */
@@ -113,27 +119,24 @@ export class MatchesPage {
     return this.reference.breedLabel(pet);
   }
 
-  protected matchDate(match: MatchItem): string {
-    return dateFormat.format(new Date(match.createdAt));
+  /** Time today, date otherwise, of the last activity (message or match). */
+  protected activity(match: Conversation): string {
+    const date = new Date(match.last_message_at ?? match.matched_at);
+    return date.toDateString() === new Date().toDateString() ? timeFormat.format(date) : dateFormat.format(date);
   }
 
   protected distance(km: number): string {
     return distanceLabel(km);
   }
 
-  /** Step 7 will open the conversation instead. */
-  protected async openMatch(match: MatchItem): Promise<void> {
-    const modal = await this.modals.create({
-      component: PetDetailModalComponent,
-      componentProps: { petId: match.other.id, actions: false },
-    });
-    await modal.present();
+  protected openChat(match: Conversation): void {
+    void this.nav.navigateForward(['/tabs/matches', match.match_id]);
   }
 
-  protected async confirmUnmatch(match: MatchItem, sliding?: IonItemSliding): Promise<void> {
+  protected async confirmUnmatch(match: Conversation, sliding?: IonItemSliding): Promise<void> {
     await sliding?.close();
     const alert = await this.alerts.create({
-      header: `Annuler le match avec ${match.other.name} ?`,
+      header: `Annuler le match avec ${match.other_pet_name} ?`,
       message: 'La conversation sera supprimée et vos animaux ne vous seront plus proposés.',
       buttons: [
         { text: 'Garder', role: 'cancel' },
@@ -157,7 +160,7 @@ export class MatchesPage {
     this.answering.set(like.id + like.my_pet_id);
     try {
       const matchId = await this.store.answerLike(like, kind);
-      if (matchId) await this.celebrate(like);
+      if (matchId) await this.celebrate(like, matchId);
     } catch {
       await this.toast('Action non enregistrée, vérifiez votre connexion.');
     } finally {
@@ -165,7 +168,7 @@ export class MatchesPage {
     }
   }
 
-  private async celebrate(like: ReceivedLike): Promise<void> {
+  private async celebrate(like: ReceivedLike, matchId: string): Promise<void> {
     void Haptics.impact({ style: ImpactStyle.Heavy }).catch(() => undefined);
     const mine = this.pets.pets().find((p) => p.id === like.my_pet_id);
     const modal = await this.modals.create({
@@ -177,12 +180,13 @@ export class MatchesPage {
     });
     await modal.present();
     const { role } = await modal.onWillDismiss();
-    if (role === 'matches') this.tab.set('matches');
+    if (role === 'message') await this.nav.navigateForward(['/tabs/matches', matchId]);
+    else this.tab.set('matches');
   }
 
-  private async unmatch(match: MatchItem): Promise<void> {
+  private async unmatch(match: Conversation): Promise<void> {
     try {
-      await this.store.unmatch(match.id);
+      await this.store.unmatch(match.match_id);
     } catch {
       await this.toast("L'annulation a échoué. Réessayez.");
     }

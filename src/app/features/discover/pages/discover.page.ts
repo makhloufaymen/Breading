@@ -145,6 +145,7 @@ export class DiscoverPage {
       const matchId = await this.store.swipe(id, direction);
       if (matchId && card && seeker) {
         await this.showMatch(
+          matchId,
           { name: seeker.name, photoUrl: this.seekerAvatar(), emoji: this.emoji(seeker.species_id) },
           { name: card.name, photoUrl: card.photoUrls[0] ?? null, emoji: card.emoji },
         );
@@ -160,12 +161,12 @@ export class DiscoverPage {
     return this.store.setFilters(DEFAULT_FILTERS);
   }
 
-  private async showMatch(mine: MatchPetView, other: MatchPetView): Promise<void> {
+  private async showMatch(matchId: string, mine: MatchPetView, other: MatchPetView): Promise<void> {
     void Haptics.impact({ style: ImpactStyle.Heavy }).catch(() => undefined);
     const modal = await this.modals.create({ component: MatchModalComponent, componentProps: { mine, other } });
     await modal.present();
     const { role } = await modal.onWillDismiss();
-    if (role === 'matches') await this.nav.navigateRoot('/tabs/matches');
+    if (role === 'message') await this.nav.navigateRoot(['/tabs/matches', matchId]);
   }
 
   /** Small heart pop + haptic tick (vibration on phones, nothing in the browser). */
