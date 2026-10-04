@@ -1,0 +1,124 @@
+// Design tokens for the whole app.
+// Every color, radius, shadow and spacing used by the UI must come from here.
+// Light palette is the default; the dark palette applies when the system is in
+// dark mode (unless the user forced light) or when `.theme-dark` is set on <html>.
+@use 'sass:color';
+
+// Generates the full set of variables Ionic expects for one named color.
+@mixin ion-color($name, $base, $contrast) {
+  --ion-color-#{$name}: #{$base};
+  --ion-color-#{$name}-rgb: #{color.channel($base, 'red')}, #{color.channel($base, 'green')}, #{color.channel($base, 'blue')};
+  --ion-color-#{$name}-contrast: #{$contrast};
+  --ion-color-#{$name}-contrast-rgb: #{color.channel($contrast, 'red')}, #{color.channel($contrast, 'green')}, #{color.channel($contrast, 'blue')};
+  --ion-color-#{$name}-shade: #{color.mix(#000, $base, 12%)};
+  --ion-color-#{$name}-tint: #{color.mix(#fff, $base, 10%)};
+}
+
+@mixin rgb-var($name, $value) {
+  #{$name}: #{$value};
+  #{$name}-rgb: #{color.channel($value, 'red')}, #{color.channel($value, 'green')}, #{color.channel($value, 'blue')};
+}
+
+// Background and text colors, plus the intermediate "step" shades Ionic uses for
+// borders, placeholders, list headers, segments… (they default to light values).
+@mixin surface-colors($bg, $text) {
+  @include rgb-var(--ion-background-color, $bg);
+  @include rgb-var(--ion-text-color, $text);
+  @for $i from 1 through 19 {
+    $step: $i * 50;
+    --ion-background-color-step-#{$step}: #{color.mix($text, $bg, $step * 0.1%)};
+    --ion-text-color-step-#{$step}: #{color.mix($bg, $text, $step * 0.1%)};
+    --ion-color-step-#{$step}: #{color.mix($text, $bg, $step * 0.1%)};
+  }
+}
+
+// ─── Light palette: cream, warm pastels, brown text (never pure black) ───
+@mixin light-palette {
+  @include ion-color('primary', #f4a07a, #3e2318);   // peach coral
+  @include ion-color('secondary', #9cc5a1, #1f3a24); // sage
+  @include ion-color('tertiary', #b8a9e3, #2c2350);  // lavender
+  @include ion-color('success', #7bc68f, #173a20);
+  @include ion-color('warning', #f6c667, #4a3500);
+  @include ion-color('danger', #e57373, #3d0f0f);
+  @include ion-color('light', #fff4ea, #3e2e25);
+  @include ion-color('medium', #7d6e64, #ffffff);
+  @include ion-color('dark', #3e2e25, #ffffff);
+
+  @include surface-colors(#fff9f3, #3e2e25);
+  --ion-toolbar-background: #fff9f3;
+  --ion-tab-bar-background: #ffffff;
+  --ion-item-background: transparent;
+  --ion-card-background: #ffffff;
+  --ion-border-color: #f0e2d6;
+
+  --app-surface: #ffffff;
+  --app-surface-muted: #fff1e6;
+  --app-shadow-soft: 0 6px 20px rgba(140, 90, 60, 0.12);
+  --app-shadow-lifted: 0 12px 32px rgba(140, 90, 60, 0.18);
+}
+
+// ─── Dark palette: warm brown-grey, softened pastels ───
+@mixin dark-palette {
+  @include ion-color('primary', #f6ae8c, #3e2318);
+  @include ion-color('secondary', #a8cfad, #1f3a24);
+  @include ion-color('tertiary', #c4b7ea, #2c2350);
+  @include ion-color('success', #8ccf9e, #173a20);
+  @include ion-color('warning', #f2cd7e, #4a3500);
+  @include ion-color('danger', #ec8a8a, #3d0f0f);
+  @include ion-color('light', #3a302a, #f3e9e1);
+  @include ion-color('medium', #a89a90, #211a16);
+  @include ion-color('dark', #f3e9e1, #211a16);
+
+  @include surface-colors(#211a16, #f3e9e1);
+  --ion-toolbar-background: #211a16;
+  --ion-tab-bar-background: #2a221e;
+  --ion-item-background: transparent;
+  --ion-card-background: #2c2420;
+  --ion-border-color: #3d332d;
+
+  --app-surface: #2c2420;
+  --app-surface-muted: #342b26;
+  --app-shadow-soft: 0 6px 20px rgba(0, 0, 0, 0.35);
+  --app-shadow-lifted: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+:root {
+  @include light-palette;
+
+  // Typography
+  --app-font-family: 'Nunito Variable', 'Nunito', system-ui, sans-serif;
+  --ion-font-family: var(--app-font-family);
+
+  // Shapes: generous rounding for a soft, friendly look
+  --app-radius-sm: 10px;
+  --app-radius-md: 16px;
+  --app-radius-lg: 24px;
+  --app-radius-xl: 32px;
+  --app-radius-pill: 999px;
+
+  // Spacing scale
+  --app-space-1: 4px;
+  --app-space-2: 8px;
+  --app-space-3: 12px;
+  --app-space-4: 16px;
+  --app-space-5: 24px;
+  --app-space-6: 32px;
+  --app-space-7: 48px;
+
+  // Motion
+  --app-ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --app-ease-soft: cubic-bezier(0.25, 0.8, 0.25, 1);
+  --app-duration-fast: 150ms;
+  --app-duration-base: 280ms;
+  --app-duration-slow: 600ms;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.theme-light) {
+    @include dark-palette;
+  }
+}
+
+:root.theme-dark {
+  @include dark-palette;
+}

@@ -1,0 +1,53 @@
+/* Core CSS required for Ionic components to work properly */
+@import "@ionic/angular/css/core.css";
+
+/* Basic CSS for apps built with Ionic */
+@import "@ionic/angular/css/normalize.css";
+@import "@ionic/angular/css/structure.css";
+@import "@ionic/angular/css/typography.css";
+@import "@ionic/angular/css/display.css";
+
+/* Optional CSS utils */
+@import "@ionic/angular/css/padding.css";
+@import "@ionic/angular/css/text-alignment.css";
+@import "@ionic/angular/css/flex-utils.css";
+
+/* Rounded font, bundled with the app (works offline, no CDN) */
+@import "@fontsource-variable/nunito/index.css";
+
+/* Dark mode colors are defined in theme/variables.scss, not with Ionic's palettes */
+
+body {
+  font-family: var(--app-font-family);
+  -webkit-font-smoothing: antialiased;
+}
+
+ion-title {
+  font-weight: 800;
+}
+
+ion-button {
+  --border-radius: var(--app-radius-pill);
+  font-weight: 700;
+  text-transform: none;
+}
+
+ion-card {
+  border-radius: var(--app-radius-lg);
+  box-shadow: var(--app-shadow-soft);
+}
+
+ion-modal {
+  --border-radius: var(--app-radius-xl);
+}
+
+/* Respect the "reduce motion" accessibility setting everywhere */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

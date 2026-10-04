@@ -1,0 +1,7 @@
+{
+  "name": "Breading",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}

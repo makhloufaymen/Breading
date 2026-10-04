@@ -1,0 +1,44 @@
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--app-space-3);
+  padding: var(--app-space-7) var(--app-space-5);
+  animation: fade-up var(--app-duration-slow) var(--app-ease-soft) both;
+}
+
+.emoji {
+  display: grid;
+  place-items: center;
+  width: 112px;
+  height: 112px;
+  font-size: 56px;
+  border-radius: 50%;
+  background: var(--app-surface-muted);
+  box-shadow: var(--app-shadow-soft);
+  animation: float 3.2s ease-in-out infinite;
+}
+
+h2 {
+  margin: var(--app-space-3) 0 0;
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+
+p {
+  margin: 0;
+  max-width: 300px;
+  color: var(--ion-color-medium);
+  line-height: 1.5;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-8px) rotate(3deg); }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
