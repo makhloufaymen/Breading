@@ -76,7 +76,7 @@ Storage : bucket public `pet-photos`, chemins `{owner_id}/{pet_id}/{uuid}.jpg`, 
 - Session Supabase persistée via `@capacitor/preferences` (pas de `localStorage`).
 - Photos redimensionnées et privées de leurs métadonnées EXIF avant l'upload.
 - Formulaires : Reactive Forms typés.
-- Un commit par étape validée sur l'émulateur Android.
+- Un commit par étape validée dans le navigateur (`ionic serve`, vue mobile des DevTools).
 
 ## Design
 
@@ -100,16 +100,16 @@ supabase db reset                           # rejoue migrations + seed
 
 Prérequis Windows : Node 22+, Ionic CLI, Android Studio (SDK + JDK 21 intégré), Docker Desktop (démarré), Supabase CLI. Machine à 8 Go de RAM : services Supabase non indispensables désactivés dans `supabase/config.toml` (analytics, SMTP local, edge runtime, S3, vector) ; un seul émulateur à la fois.
 
-Pas de téléphone physique pour l'instant : les tests se font sur **émulateur Android** (AVD Pixel, API récente, image Google Play) et, pour l'itération rapide d'UI, dans le navigateur (`ionic serve`, vue mobile des DevTools). Depuis l'émulateur, le Supabase local est joignable via `http://10.0.2.2:54321`, pas `localhost`. Pour les scénarios à deux utilisateurs (match, chat) : deux émulateurs, ou un émulateur + le navigateur.
+Pas de téléphone physique pour l'instant : les étapes se valident **dans le navigateur** (`ionic serve` sur http://localhost:8100, vue mobile des DevTools). L'émulateur Android (AVD `Medium_Phone_API_37.0`) reste disponible pour vérifier le natif (caméra, build) : depuis l'émulateur, le Supabase local est joignable via `http://10.0.2.2:54321`, pas `localhost`. Pour les scénarios à deux utilisateurs (match, chat) : deux fenêtres de navigateur (dont une en navigation privée).
 
 ## Plan par étapes
 
-Statut : `[ ]` à faire, `[x]` validé sur l'émulateur Android et commité.
+Statut : `[ ]` à faire, `[x]` validé dans le navigateur et commité.
 
 - [x] 0. Initialisation : git, projet Ionic, Capacitor Android, thème clair/sombre, coquille à 4 onglets, Supabase local
 - [x] 1. Auth : inscription, connexion, déconnexion, persistance de session, guards, `profiles` (confirmation d'email désactivée en local)
 - [ ] 2. Référentiels (espèces, races, vaccins) + écran Compte
-- [ ] 3. Mes animaux : CRUD, race en liste ou saisie libre, pedigree, vaccins, code postal → commune
+- [x] 3. Mes animaux : CRUD, race en liste ou saisie libre, pedigree, vaccins, code postal → commune
 - [ ] 4. Photos : caméra/galerie, compression, upload, ordre, suppression
 - [ ] 5. Découverte : `search_pets`, choix de l'animal qui cherche, filtres, pile de cartes à swiper, fiche détaillée
 - [ ] 6. Likes et matchs : swipes, trigger de match, modale « C'est un match ! », onglet Matchs, « qui m'a liké », annulation de match
