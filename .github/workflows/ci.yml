@@ -1,0 +1,56 @@
+# Every push to main and every pull request: app checks + database security tests.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A newer push on the same branch cancels the run in progress.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  app:
+    name: Lint, unit tests, production build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+      - run: npx ng lint
+      - run: npx ng test --watch=false
+      - run: npx ng build --configuration production
+
+  database:
+    name: Database security tests (RLS, RPC, Storage)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      # Applies every migration and seed.sql. Only what the tests need: database,
+      # auth, REST, Storage and the gateway.
+      - name: Start Supabase
+        run: supabase start -x studio,imgproxy,mailpit,edge-runtime,logflare,vector,supavisor,postgres-meta,realtime
+
+      - name: Run security tests
+        run: bash supabase/tests/run.sh
+
+      - name: Stop Supabase
+        if: always()
+        run: supabase stop --no-backup

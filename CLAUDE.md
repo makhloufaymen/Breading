@@ -102,6 +102,12 @@ node supabase/scripts/seed-photos.mjs       # après un reset : photos des anima
 docker exec -i supabase_db_Breading psql -U postgres -v email=<email> < supabase/scripts/demo-for-user.sql   # matchs et likes reçus pour un vrai compte
 ```
 
+## CI (GitHub Actions)
+
+- `.github/workflows/ci.yml`, à chaque push sur `main` et chaque pull request : lint, tests unitaires, build de production ; Supabase démarré dans la CI (migrations + seed) puis tests de sécurité multi-utilisateurs `supabase/tests/run.sh` (RLS, RPC, Storage).
+- `.github/workflows/android.yml`, manuel ou sur un tag `v*` : AAB + APK en artefacts (et dans la release GitHub pour un tag). Signé si les secrets `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` existent ; Supabase hébergé si les variables `SUPABASE_URL` et `SUPABASE_PUBLISHABLE_KEY` existent.
+- Toute nouvelle table ou RPC : ajouter ses cas à un fichier de `supabase/tests/` (la CI échoue au premier cas faux). En local : `bash supabase/tests/run.sh`.
+
 Prérequis Windows : Node 22+, Ionic CLI, Android Studio (SDK + JDK 21 intégré), Docker Desktop (démarré), Supabase CLI. Machine à 8 Go de RAM : services Supabase non indispensables désactivés dans `supabase/config.toml` (analytics, S3, vector). Activés depuis l'étape 8 : edge runtime (fonction `delete-account`) et Mailpit, qui reçoit les emails locaux sur http://localhost:54324 ; un seul émulateur à la fois.
 
 Pas de téléphone physique pour l'instant : les étapes se valident **dans le navigateur** (`ionic serve` sur http://localhost:8100, vue mobile des DevTools). L'émulateur Android (AVD `Medium_Phone_API_37.0`) reste disponible pour vérifier le natif (caméra, build) : depuis l'émulateur, le Supabase local est joignable via `http://10.0.2.2:54321`, pas `localhost`. Pour les scénarios à deux utilisateurs (match, chat) : deux fenêtres de navigateur (dont une en navigation privée).

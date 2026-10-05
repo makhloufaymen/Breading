@@ -7,8 +7,9 @@ android {
         applicationId "com.breading.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        // Set by the CI (Play Store needs a higher versionCode for every upload); 1 / 1.0 locally.
+        versionCode((System.getenv("BREADING_VERSION_CODE") ?: "1").toInteger())
+        versionName(System.getenv("BREADING_VERSION_NAME") ?: "1.0")
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
