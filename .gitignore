@@ -77,3 +77,8 @@ Thumbs.db
 .env
 .env.*
 
+
+# Android release signing (keep the keystore safe: it can't be replaced once the app is published)
+/android/keystore.properties
+*.jks
+*.keystore

@@ -16,8 +16,26 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    // Release signing: android/keystore.properties (not versioned) points to the
+    // upload keystore. Without it, release builds are simply left unsigned.
+    def keystorePropertiesFile = rootProject.file("keystore.properties")
+    signingConfigs {
+        if (keystorePropertiesFile.exists()) {
+            def keystoreProperties = new Properties()
+            keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
+            release {
+                storeFile rootProject.file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+            }
+        }
+    }
     buildTypes {
         release {
+            if (keystorePropertiesFile.exists()) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

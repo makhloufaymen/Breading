@@ -1,3 +1,6 @@
 <ion-app>
+  @if (!network.online()) {
+    <div class="offline" role="status">📡 Hors ligne : vos actions reprendront au retour du réseau.</div>
+  }
   <ion-router-outlet></ion-router-outlet>
 </ion-app>

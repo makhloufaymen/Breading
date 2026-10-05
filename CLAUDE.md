@@ -95,6 +95,8 @@ npm run build && npx ng lint && npx ng test --watch=false
 ionic cap run android -l --external         # live reload sur téléphone Android
 npx cap sync                                # après un build ou l'ajout d'un plugin
 supabase start | stop                       # Supabase local (Docker)
+npm run build:android                       # build release Android (AAB + APK), signé si android/keystore.properties existe
+npm run assets:generate                     # régénère icône et splash depuis assets/generate.mjs
 supabase db reset                           # rejoue migrations + seed (15 comptes de test : camille@, julien@, sophie@, lucas@… @test.fr, mot de passe password123)
 node supabase/scripts/seed-photos.mjs       # après un reset : photos des animaux de test (dog.ceo, thecatapi)
 docker exec -i supabase_db_Breading psql -U postgres -v email=<email> < supabase/scripts/demo-for-user.sql   # matchs et likes reçus pour un vrai compte
@@ -117,4 +119,4 @@ Statut : `[ ]` à faire, `[x]` validé dans le navigateur et commité.
 - [x] 6. Likes et matchs : swipes, trigger de match, modale « C'est un match ! », onglet Matchs, « qui m'a liké », annulation de match
 - [x] 7. Messagerie temps réel : conversations, chat, non-lus
 - [x] 8. Confiance et conformité : signalement, blocage, suppression de compte, confirmation d'email avec deep link
-- [ ] 9. Finition : états vides, erreurs, hors ligne, icône, splash, build Android signé
+- [x] 9. Finition : états vides, erreurs, hors ligne, icône, splash, build Android signé

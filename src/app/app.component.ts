@@ -1,22 +1,29 @@
-import { Component, effect, inject } from '@angular/core';
+import { Component, afterNextRender, effect, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { App } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
+import { SplashScreen } from '@capacitor/splash-screen';
 import { IonApp, IonRouterOutlet, NavController } from '@ionic/angular';
 
 import { AuthStore } from './core/auth/auth.store';
+import { NetworkStore } from './core/network/network.store';
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
+  styleUrl: 'app.component.scss',
   imports: [IonApp, IonRouterOutlet],
 })
 export class AppComponent {
   private readonly auth = inject(AuthStore);
   private readonly router = inject(Router);
   private readonly nav = inject(NavController);
+  protected readonly network = inject(NetworkStore);
 
   constructor() {
+    // The native splash stays until the first screen is drawn (auto-hide after 3 s as a fallback).
+    afterNextRender(() => void SplashScreen.hide({ fadeOutDuration: 300 }).catch(() => undefined));
+
     // If the session disappears while inside the app (sign-out, expired refresh
     // token, account deleted), go back to the login screen with a fresh stack.
     effect(() => {

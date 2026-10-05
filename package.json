@@ -10,7 +10,9 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lint": "ng lint",
-    "gen:types": "supabase gen types typescript --local > src/app/core/supabase/database.types.ts"
+    "gen:types": "supabase gen types typescript --local > src/app/core/supabase/database.types.ts",
+    "build:android": "node scripts/build-android.mjs",
+    "assets:generate": "node assets/generate.mjs && capacitor-assets generate --iconBackgroundColor #f4a07a --iconBackgroundColorDark #f4a07a --splashBackgroundColor #fff9f3 --splashBackgroundColorDark #211a16"
   },
   "private": true,
   "dependencies": {
@@ -27,7 +29,9 @@
     "@capacitor/haptics": "8.0.2",
     "@capacitor/ios": "^8.5.2",
     "@capacitor/keyboard": "8.0.6",
+    "@capacitor/network": "^8.0.1",
     "@capacitor/preferences": "^8.0.1",
+    "@capacitor/splash-screen": "^8.0.2",
     "@capacitor/status-bar": "8.0.4",
     "@fontsource-variable/nunito": "^5.3.0",
     "@ionic/angular": "^9.0.0",
@@ -41,6 +45,7 @@
     "@angular/cli": "22.1.8",
     "@angular/compiler-cli": "22.1.7",
     "@angular/language-service": "22.1.7",
+    "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "8.5.2",
     "@ionic/angular-toolkit": "^13.0.0",
     "angular-eslint": "22.0.0",

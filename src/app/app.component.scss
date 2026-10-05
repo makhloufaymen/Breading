@@ -1,0 +1,22 @@
+// Offline banner, above every screen (including login). Centred with auto margins:
+// the fade-up animation owns the transform property.
+.offline {
+  position: fixed;
+  z-index: 1000;
+  top: calc(var(--ion-safe-area-top, 0px) + var(--app-space-2));
+  left: 0;
+  right: 0;
+  width: fit-content;
+  margin: 0 auto;
+  max-width: calc(100% - var(--app-space-6));
+  padding: var(--app-space-2) var(--app-space-4);
+  border-radius: var(--app-radius-pill);
+  background: var(--ion-color-dark);
+  color: var(--ion-color-dark-contrast);
+  box-shadow: var(--app-shadow-lifted);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-align: center;
+  animation: app-fade-up var(--app-duration-base) var(--app-ease-soft) both;
+  pointer-events: none;
+}
