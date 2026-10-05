@@ -13,6 +13,11 @@ describe('authErrorMessage', () => {
     expect(authErrorMessage(error)).toBe('Un compte existe déjà avec cet email.');
   });
 
+  it('explains an unconfirmed email', () => {
+    const error = new AuthApiError('Email not confirmed', 400, 'email_not_confirmed');
+    expect(authErrorMessage(error)).toContain('Confirmez');
+  });
+
   it('detects network failures', () => {
     expect(authErrorMessage(new TypeError('Failed to fetch'))).toContain('Impossible de joindre le serveur');
   });

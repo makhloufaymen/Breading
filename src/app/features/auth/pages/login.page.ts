@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { isAuthApiError } from '@supabase/supabase-js';
 import {
   IonButton,
   IonContent,
@@ -30,6 +31,9 @@ export class LoginPage {
   });
   protected readonly submitting = signal(false);
   protected readonly serverError = signal<string | null>(null);
+  /** Sign-in refused because the email is not confirmed yet: offer to resend the link. */
+  protected readonly unconfirmed = signal(false);
+  protected readonly resent = signal(false);
 
   protected async submit(): Promise<void> {
     if (this.form.invalid) {
@@ -38,6 +42,7 @@ export class LoginPage {
     }
     this.submitting.set(true);
     this.serverError.set(null);
+    this.unconfirmed.set(false);
     try {
       const { email, password } = this.form.getRawValue();
       await this.auth.signIn(email.trim(), password);
@@ -46,8 +51,19 @@ export class LoginPage {
       this.form.reset();
     } catch (error) {
       this.serverError.set(authErrorMessage(error));
+      this.unconfirmed.set(isAuthApiError(error) && error.code === 'email_not_confirmed');
+      this.resent.set(false);
     } finally {
       this.submitting.set(false);
+    }
+  }
+
+  protected async resend(): Promise<void> {
+    try {
+      await this.auth.resendConfirmation(this.form.getRawValue().email.trim());
+      this.resent.set(true);
+    } catch (error) {
+      this.serverError.set(authErrorMessage(error));
     }
   }
 }

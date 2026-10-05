@@ -98,3 +98,33 @@ ion-button[type='submit'] {
   }
 }
 
+
+.sent {
+  text-align: center;
+
+  .emoji {
+    font-size: 56px;
+    animation: app-float 3.2s ease-in-out infinite;
+  }
+
+  h2 {
+    margin: var(--app-space-2) 0;
+    font-weight: 900;
+  }
+
+  p {
+    line-height: 1.5;
+    color: var(--ion-color-medium);
+  }
+
+  .done {
+    color: var(--ion-color-success-shade);
+    font-weight: 700;
+  }
+}
+
+.resent {
+  text-align: center;
+  color: var(--ion-color-success-shade);
+  font-weight: 700;
+}

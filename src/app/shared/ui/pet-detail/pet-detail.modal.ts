@@ -1,7 +1,18 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, input, signal } from '@angular/core';
-import { IonButton, IonButtons, IonContent, IonFooter, IonHeader, IonIcon, IonSpinner, IonToolbar, ModalController } from '@ionic/angular';
+import {
+  ActionSheetController,
+  IonButton,
+  IonButtons,
+  IonContent,
+  IonFooter,
+  IonHeader,
+  IonIcon,
+  IonSpinner,
+  IonToolbar,
+  ModalController,
+} from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { close, heart, chevronDown } from 'ionicons/icons';
+import { chevronDown, close, ellipsisHorizontal, heart } from 'ionicons/icons';
 
 import { distanceLabel } from '../../../core/models/discover.models';
 import type { PetProfile } from '../../../core/models/pet.models';
@@ -11,12 +22,14 @@ import { PetProfileRepository } from '../../../core/pet-profile/pet-profile.repo
 import { PhotosRepository } from '../../../core/photos/photos.repository';
 import { petAge } from '../../pipes/pet-age.pipe';
 import { PhotoCarouselComponent } from '../photo-carousel/photo-carousel.component';
+import { SafetyActions } from '../report-modal/safety-actions';
 
 const dateFormat = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 
 /**
  * Full profile of another owner's pet (discovery, likes received, matches).
- * With actions, dismisses with role 'like' or 'pass' from its buttons.
+ * With actions, dismisses with role 'like' or 'pass' from its buttons; with
+ * role 'blocked' after blocking the owner (the caller refreshes its lists).
  */
 @Component({
   selector: 'app-pet-detail-modal',
@@ -24,6 +37,13 @@ const dateFormat = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'lo
   template: `
     <ion-header class="ion-no-border">
       <ion-toolbar>
+        @if (pet()) {
+          <ion-buttons slot="start">
+            <ion-button (click)="openSafety()" aria-label="Signaler ou bloquer">
+              <ion-icon slot="icon-only" name="ellipsis-horizontal" />
+            </ion-button>
+          </ion-buttons>
+        }
         <ion-buttons slot="end">
           <ion-button (click)="dismiss('close')" aria-label="Fermer"><ion-icon slot="icon-only" name="chevron-down" /></ion-button>
         </ion-buttons>
@@ -134,6 +154,8 @@ export class PetDetailModalComponent implements OnInit {
   private readonly profiles = inject(PetProfileRepository);
   private readonly photos = inject(PhotosRepository);
   private readonly reference = inject(ReferenceStore);
+  private readonly safety = inject(SafetyActions);
+  private readonly actionSheets = inject(ActionSheetController);
 
   protected readonly pet = signal<PetProfile | null>(null);
   protected readonly error = signal(false);
@@ -160,7 +182,7 @@ export class PetDetailModalComponent implements OnInit {
   });
 
   constructor() {
-    addIcons({ close, heart, chevronDown });
+    addIcons({ chevronDown, close, ellipsisHorizontal, heart });
   }
 
   async ngOnInit(): Promise<void> {
@@ -172,7 +194,27 @@ export class PetDetailModalComponent implements OnInit {
     }
   }
 
-  protected dismiss(role: 'like' | 'pass' | 'close'): void {
+  protected async openSafety(): Promise<void> {
+    const pet = this.pet();
+    if (!pet) return;
+    const target = { ownerId: pet.owner_id, ownerName: pet.owner?.display_name ?? 'ce propriétaire', petId: pet.id };
+    const sheet = await this.actionSheets.create({
+      header: `${pet.name} · ${target.ownerName}`,
+      buttons: [
+        { text: 'Signaler', handler: () => void this.afterSafety(this.safety.report(target)) },
+        { text: `Bloquer ${target.ownerName}`, role: 'destructive', handler: () => void this.afterSafety(this.safety.block(target)) },
+        { text: 'Annuler', role: 'cancel' },
+      ],
+    });
+    await sheet.present();
+  }
+
+  protected dismiss(role: 'like' | 'pass' | 'close' | 'blocked'): void {
     void this.modals.dismiss(null, role);
+  }
+
+  /** Blocked: this profile must disappear, close the sheet. */
+  private async afterSafety(action: Promise<boolean>): Promise<void> {
+    if (await action) this.dismiss('blocked');
   }
 }

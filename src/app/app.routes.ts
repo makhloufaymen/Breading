@@ -14,6 +14,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/pages/register.page').then((m) => m.RegisterPage),
   },
   {
+    // Email confirmation link (no guard: it signs the user in).
+    path: 'auth/callback',
+    loadComponent: () => import('./features/auth/pages/auth-callback.page').then((m) => m.AuthCallbackPage),
+  },
+  {
     path: 'tabs',
     canMatch: [authGuard],
     loadComponent: () => import('./layout/tabs/tabs.page').then((m) => m.TabsPage),

@@ -154,6 +154,7 @@ export class MatchesPage {
     await modal.present();
     const { role } = await modal.onWillDismiss();
     if (role === 'like' || role === 'pass') await this.answer(like, role);
+    if (role === 'blocked') await this.store.load();
   }
 
   protected async answer(like: ReceivedLike, kind: SwipeKind): Promise<void> {

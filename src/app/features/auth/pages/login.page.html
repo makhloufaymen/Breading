@@ -31,6 +31,13 @@
       @if (serverError(); as message) {
         <p class="server-error" role="alert">{{ message }}</p>
       }
+      @if (unconfirmed()) {
+        @if (resent()) {
+          <p class="resent">Email de confirmation renvoyé ✔</p>
+        } @else {
+          <ion-button type="button" fill="clear" expand="block" (click)="resend()">Renvoyer l'email de confirmation</ion-button>
+        }
+      }
 
       <ion-button type="submit" expand="block" [disabled]="submitting()">
         @if (submitting()) {

@@ -48,3 +48,19 @@
 .sign-out {
   margin-top: var(--app-space-6);
 }
+
+.blocked {
+  --background: var(--app-surface);
+  --border-radius: var(--app-radius-md);
+  margin-bottom: var(--app-space-2);
+  font-weight: 700;
+}
+
+.none {
+  display: block;
+  padding: 0 var(--app-space-4);
+}
+
+.delete {
+  margin-top: var(--app-space-2);
+}

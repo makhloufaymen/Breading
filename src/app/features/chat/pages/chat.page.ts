@@ -22,6 +22,7 @@ import { alertCircle, ellipsisHorizontal, send } from 'ionicons/icons';
 import { MESSAGE_MAX } from '../../../core/models/chat.models';
 import { SPECIES_ID } from '../../../core/models/reference.models';
 import { PetDetailModalComponent } from '../../../shared/ui/pet-detail/pet-detail.modal';
+import { SafetyActions, type SafetyTarget } from '../../../shared/ui/report-modal/safety-actions';
 import { MatchesStore } from '../../matches/state/matches.store';
 import { type ChatMessage, ConversationStore } from '../state/conversation.store';
 
@@ -65,6 +66,7 @@ export class ChatPage {
   private readonly modals = inject(ModalController);
   private readonly toasts = inject(ToastController);
   private readonly nav = inject(NavController);
+  private readonly safety = inject(SafetyActions);
 
   private readonly content = viewChild(IonContent);
 
@@ -154,6 +156,12 @@ export class ChatPage {
       header: `${conversation.other_pet_name} · ${conversation.other_owner_name}`,
       buttons: [
         { text: `Voir la fiche de ${conversation.other_pet_name}`, handler: () => void this.openProfile() },
+        { text: 'Signaler', handler: () => void this.afterSafety(this.safety.report(this.safetyTarget(conversation))) },
+        {
+          text: `Bloquer ${conversation.other_owner_name}`,
+          role: 'destructive',
+          handler: () => void this.afterSafety(this.safety.block(this.safetyTarget(conversation))),
+        },
         { text: 'Annuler le match', role: 'destructive', handler: () => void this.confirmUnmatch() },
         { text: 'Fermer', role: 'cancel' },
       ],
@@ -169,6 +177,22 @@ export class ChatPage {
       componentProps: { petId: conversation.other_pet_id, actions: false },
     });
     await modal.present();
+    const { role } = await modal.onWillDismiss();
+    if (role === 'blocked') await this.leaveBlocked();
+  }
+
+  private safetyTarget(c: NonNullable<ReturnType<typeof this.conversation>>): SafetyTarget {
+    return { ownerId: c.other_owner_id, ownerName: c.other_owner_name, petId: c.other_pet_id, matchId: c.match_id };
+  }
+
+  private async afterSafety(action: Promise<boolean>): Promise<void> {
+    if (await action) await this.leaveBlocked();
+  }
+
+  /** Blocking deleted this match and its conversation: back to the list, refreshed. */
+  private async leaveBlocked(): Promise<void> {
+    await this.matches.load();
+    await this.nav.navigateBack('/tabs/matches');
   }
 
   private async confirmUnmatch(): Promise<void> {

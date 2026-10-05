@@ -48,9 +48,28 @@
       </ion-segment>
     </ion-list>
 
+    <ion-list lines="none">
+      <ion-list-header>
+        <ion-label>Propriétaires bloqués</ion-label>
+      </ion-list-header>
+      @for (owner of account.blocked(); track owner.id) {
+        <ion-item class="blocked">
+          <ion-label>{{ owner.displayName }}</ion-label>
+          <ion-button slot="end" fill="clear" size="small" (click)="unblock(owner.id, owner.displayName)">Débloquer</ion-button>
+        </ion-item>
+      } @empty {
+        <ion-note class="none">Aucun propriétaire bloqué.</ion-note>
+      }
+    </ion-list>
+
     <ion-button class="sign-out" expand="block" fill="clear" color="danger" (click)="confirmSignOut()">
       <ion-icon slot="start" name="log-out-outline" />
       Se déconnecter
+    </ion-button>
+
+    <ion-button class="delete" expand="block" fill="clear" color="medium" size="small" [disabled]="deleting()" (click)="confirmDelete()">
+      <ion-icon slot="start" name="trash-outline" />
+      {{ deleting() ? 'Suppression…' : 'Supprimer mon compte' }}
     </ion-button>
   </div>
 </ion-content>

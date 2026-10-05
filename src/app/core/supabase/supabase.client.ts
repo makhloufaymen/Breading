@@ -31,7 +31,10 @@ export const SUPABASE = new InjectionToken<AppSupabaseClient>('SUPABASE', {
         storage: capacitorStorage,
         persistSession: true,
         autoRefreshToken: true,
-        // No OAuth/magic-link redirects into the app yet (deep links come in step 8).
+        // PKCE: the email confirmation link brings back a one-time code, exchanged
+        // for a session by the app that started the sign-up (safer than tokens in the URL).
+        flowType: 'pkce',
+        // The code is exchanged explicitly by AuthCallbackPage (browser) or after a deep link (app).
         detectSessionInUrl: false,
       },
     }),

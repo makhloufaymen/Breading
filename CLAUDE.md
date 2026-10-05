@@ -100,7 +100,7 @@ node supabase/scripts/seed-photos.mjs       # après un reset : photos des anima
 docker exec -i supabase_db_Breading psql -U postgres -v email=<email> < supabase/scripts/demo-for-user.sql   # matchs et likes reçus pour un vrai compte
 ```
 
-Prérequis Windows : Node 22+, Ionic CLI, Android Studio (SDK + JDK 21 intégré), Docker Desktop (démarré), Supabase CLI. Machine à 8 Go de RAM : services Supabase non indispensables désactivés dans `supabase/config.toml` (analytics, SMTP local, edge runtime, S3, vector) ; un seul émulateur à la fois.
+Prérequis Windows : Node 22+, Ionic CLI, Android Studio (SDK + JDK 21 intégré), Docker Desktop (démarré), Supabase CLI. Machine à 8 Go de RAM : services Supabase non indispensables désactivés dans `supabase/config.toml` (analytics, S3, vector). Activés depuis l'étape 8 : edge runtime (fonction `delete-account`) et Mailpit, qui reçoit les emails locaux sur http://localhost:54324 ; un seul émulateur à la fois.
 
 Pas de téléphone physique pour l'instant : les étapes se valident **dans le navigateur** (`ionic serve` sur http://localhost:8100, vue mobile des DevTools). L'émulateur Android (AVD `Medium_Phone_API_37.0`) reste disponible pour vérifier le natif (caméra, build) : depuis l'émulateur, le Supabase local est joignable via `http://10.0.2.2:54321`, pas `localhost`. Pour les scénarios à deux utilisateurs (match, chat) : deux fenêtres de navigateur (dont une en navigation privée).
 
@@ -116,5 +116,5 @@ Statut : `[ ]` à faire, `[x]` validé dans le navigateur et commité.
 - [x] 5. Découverte : `search_pets`, choix de l'animal qui cherche, filtres, pile de cartes à swiper, fiche détaillée
 - [x] 6. Likes et matchs : swipes, trigger de match, modale « C'est un match ! », onglet Matchs, « qui m'a liké », annulation de match
 - [x] 7. Messagerie temps réel : conversations, chat, non-lus
-- [ ] 8. Confiance et conformité : signalement, blocage, suppression de compte, confirmation d'email avec deep link
+- [x] 8. Confiance et conformité : signalement, blocage, suppression de compte, confirmation d'email avec deep link
 - [ ] 9. Finition : états vides, erreurs, hors ligne, icône, splash, build Android signé

@@ -66,6 +66,17 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.breading.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.breading.app</string>
+			</array>
+		</dict>
+	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>Breading utilise l'appareil photo pour prendre des photos de vos animaux.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

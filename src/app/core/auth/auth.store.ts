@@ -5,6 +5,11 @@ import type { Session } from '@supabase/supabase-js';
 
 import { SUPABASE } from '../supabase/supabase.client';
 
+/** Where the confirmation email link leads: the app itself (deep link) or this site. */
+export function authCallbackUrl(): string {
+  return Capacitor.isNativePlatform() ? 'com.breading.app://auth/callback' : `${window.location.origin}/auth/callback`;
+}
+
 export interface SignUpData {
   readonly displayName: string;
   readonly email: string;
@@ -49,13 +54,29 @@ export class AuthStore {
     }
   }
 
-  async signUp({ displayName, email, password }: SignUpData): Promise<void> {
-    const { error } = await this.supabase.auth.signUp({
+  /** Returns true when the email must be confirmed first (no session yet). */
+  async signUp({ displayName, email, password }: SignUpData): Promise<{ confirmationRequired: boolean }> {
+    const { data, error } = await this.supabase.auth.signUp({
       email,
       password,
-      // Read by the handle_new_user trigger to fill profiles.display_name.
-      options: { data: { display_name: displayName } },
+      options: {
+        // Read by the handle_new_user trigger to fill profiles.display_name.
+        data: { display_name: displayName },
+        emailRedirectTo: authCallbackUrl(),
+      },
     });
+    if (error) throw error;
+    return { confirmationRequired: !data.session };
+  }
+
+  async resendConfirmation(email: string): Promise<void> {
+    const { error } = await this.supabase.auth.resend({ type: 'signup', email, options: { emailRedirectTo: authCallbackUrl() } });
+    if (error) throw error;
+  }
+
+  /** Second half of the confirmation link: the one-time code becomes a session. */
+  async exchangeCode(code: string): Promise<void> {
+    const { error } = await this.supabase.auth.exchangeCodeForSession(code);
     if (error) throw error;
   }
 

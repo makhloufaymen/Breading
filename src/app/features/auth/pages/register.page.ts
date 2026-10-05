@@ -6,6 +6,7 @@ import {
   IonContent,
   IonInput,
   IonInputPasswordToggle,
+  IonRouterLink,
   IonRouterLinkWithHref,
   IonSpinner,
   NavController,
@@ -27,7 +28,7 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
   selector: 'app-register',
   templateUrl: './register.page.html',
   styleUrl: './auth-page.scss',
-  imports: [ReactiveFormsModule, RouterLink, IonRouterLinkWithHref, IonContent, IonInput, IonInputPasswordToggle, IonButton, IonSpinner],
+  imports: [ReactiveFormsModule, RouterLink, IonRouterLink, IonRouterLinkWithHref, IonContent, IonInput, IonInputPasswordToggle, IonButton, IonSpinner],
 })
 export class RegisterPage {
   private readonly auth = inject(AuthStore);
@@ -45,6 +46,9 @@ export class RegisterPage {
   );
   protected readonly submitting = signal(false);
   protected readonly serverError = signal<string | null>(null);
+  /** Set once signed up when the email must be confirmed: shows the "check your inbox" screen. */
+  protected readonly sentTo = signal<string | null>(null);
+  protected readonly resent = signal(false);
 
   protected async submit(): Promise<void> {
     if (this.form.invalid) {
@@ -55,14 +59,30 @@ export class RegisterPage {
     this.serverError.set(null);
     try {
       const { displayName, email, password } = this.form.getRawValue();
-      // Email confirmation is off locally, so sign-up also signs the user in.
-      await this.auth.signUp({ displayName: displayName.trim(), email: email.trim(), password });
-      await this.nav.navigateRoot('/tabs/discover', { animationDirection: 'forward' });
+      const { confirmationRequired } = await this.auth.signUp({ displayName: displayName.trim(), email: email.trim(), password });
+      if (confirmationRequired) {
+        this.sentTo.set(email.trim());
+      } else {
+        // Confirmation disabled (some environments): the user is already signed in.
+        await this.nav.navigateRoot('/tabs/discover', { animationDirection: 'forward' });
+      }
       this.form.reset();
     } catch (error) {
       this.serverError.set(authErrorMessage(error));
     } finally {
       this.submitting.set(false);
+    }
+  }
+
+  protected async resend(): Promise<void> {
+    const email = this.sentTo();
+    if (!email) return;
+    this.serverError.set(null);
+    try {
+      await this.auth.resendConfirmation(email);
+      this.resent.set(true);
+    } catch (error) {
+      this.serverError.set(authErrorMessage(error));
     }
   }
 }

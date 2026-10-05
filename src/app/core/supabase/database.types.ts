@@ -23,7 +23,32 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "breeds": {
+            "blocks": {
+                  Row: {
+                    "blocked_id": string,"blocker_id": string,"created_at": string
+                  }
+                  Insert: {
+                    "blocked_id": string,"blocker_id"?: string,"created_at"?: string
+                  }
+                  Update: {
+                    "blocked_id"?: string,"blocker_id"?: string,"created_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "blocks_blocked_id_fkey"
+      columns: ["blocked_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "blocks_blocker_id_fkey"
+      columns: ["blocker_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"breeds": {
                   Row: {
                     "id": number,"name": string,"species_id": number
                   }
@@ -180,6 +205,43 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"reports": {
+                  Row: {
+                    "created_at": string,"details": string | null,"id": string,"match_id": string | null,"pet_id": string | null,"reason": Database["public"]['Enums']["report_reason"],"reported_owner_id": string | null,"reporter_id": string | null
+                  }
+                  Insert: {
+                    "created_at"?: string,"details"?: string | null,"id"?: string,"match_id"?: string | null,"pet_id"?: string | null,"reason": Database["public"]['Enums']["report_reason"],"reported_owner_id"?: string | null,"reporter_id"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"details"?: string | null,"id"?: string,"match_id"?: string | null,"pet_id"?: string | null,"reason"?: Database["public"]['Enums']["report_reason"],"reported_owner_id"?: string | null,"reporter_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "reports_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "matches"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "reports_pet_id_fkey"
+      columns: ["pet_id"]
+isOneToOne: false
+      referencedRelation: "pets"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "reports_reported_owner_id_fkey"
+      columns: ["reported_owner_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "reports_reporter_id_fkey"
+      columns: ["reporter_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"species": {
                   Row: {
                     "code": string,"id": number,"name": string
@@ -246,6 +308,12 @@ isOneToOne: false
             "are_compatible":
 { Args: { "p_pet_a": string,"p_pet_b": string }; Returns: boolean
                            },
+"block_owner":
+{ Args: { "p_owner_id": string }; Returns: undefined
+                           },
+"is_blocked_between":
+{ Args: { "p_owner_a": string,"p_owner_b": string }; Returns: boolean
+                           },
 "is_match_participant":
 { Args: { "p_match_id": string }; Returns: boolean
                            },
@@ -260,7 +328,7 @@ isOneToOne: false
                            },
 "my_conversations":
 { Args: Record<PropertyKey, never>; Returns: {
-              "last_message": string,"last_message_at": string,"last_message_mine": boolean,"match_id": string,"matched_at": string,"my_pet_id": string,"my_pet_name": string,"my_pet_photo": string,"other_city": string,"other_owner_name": string,"other_pet_id": string,"other_pet_name": string,"other_pet_photo": string,"other_species_id": number,"unread_count": number
+              "last_message": string,"last_message_at": string,"last_message_mine": boolean,"match_id": string,"matched_at": string,"my_pet_id": string,"my_pet_name": string,"my_pet_photo": string,"other_city": string,"other_owner_id": string,"other_owner_name": string,"other_pet_id": string,"other_pet_name": string,"other_pet_photo": string,"other_species_id": number,"unread_count": number
             }[]
                            },
 "received_likes":
@@ -287,7 +355,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "pet_sex": "male"|"female","swipe_kind": "like"|"pass"
+            "pet_sex": "male"|"female","report_reason": "fake_profile"|"inappropriate_content"|"harassment"|"scam"|"animal_welfare"|"other","swipe_kind": "like"|"pass"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -407,7 +475,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "pet_sex": ["male", "female"],"swipe_kind": ["like", "pass"]
+            "pet_sex": ["male", "female"],"report_reason": ["fake_profile", "inappropriate_content", "harassment", "scam", "animal_welfare", "other"],"swipe_kind": ["like", "pass"]
           }
         }
 } as const

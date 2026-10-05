@@ -124,6 +124,8 @@ export class DiscoverPage {
     const { role } = await modal.onWillDismiss();
     // Let the sheet close before the card flies away.
     if (role === 'like' || role === 'pass') await this.swipe(role);
+    // Blocked owner: their pets must leave the deck.
+    if (role === 'blocked') await this.store.reload();
   }
 
   /** Buttons under the deck: animates the top card, then onSwiped() runs. */

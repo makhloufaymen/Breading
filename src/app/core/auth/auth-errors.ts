@@ -19,6 +19,8 @@ export function authErrorMessage(error: unknown): string {
       case 'over_request_rate_limit':
       case 'over_email_send_rate_limit':
         return 'Trop de tentatives. Réessayez dans quelques minutes.';
+      case 'email_not_confirmed':
+        return "Confirmez d'abord votre adresse email (pensez aux spams).";
       case 'signup_disabled':
         return 'Les inscriptions sont momentanément fermées.';
     }

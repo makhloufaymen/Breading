@@ -6,7 +6,26 @@
       <p>Créez votre compte de propriétaire</p>
     </header>
 
-    <form class="card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    @if (sentTo(); as email) {
+      <div class="card sent">
+        <div class="emoji" aria-hidden="true">📬</div>
+        <h2>Vérifiez votre boîte mail</h2>
+        <p>
+          Nous avons envoyé un lien de confirmation à <strong>{{ email }}</strong>. Touchez-le pour activer votre compte
+          (pensez aux spams).
+        </p>
+        @if (serverError(); as message) {
+          <p class="server-error" role="alert">{{ message }}</p>
+        }
+        @if (resent()) {
+          <p class="done">Email renvoyé ✔</p>
+        } @else {
+          <ion-button fill="clear" (click)="resend()">Renvoyer l'email</ion-button>
+        }
+        <ion-button expand="block" routerLink="/login" routerDirection="back">J'ai confirmé, me connecter</ion-button>
+      </div>
+    } @else {
+      <form class="card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
       <ion-input
         formControlName="displayName"
         autocomplete="nickname"
@@ -65,7 +84,8 @@
           Créer mon compte
         }
       </ion-button>
-    </form>
+      </form>
+    }
 
     <p class="switch">
       Déjà inscrit ?
